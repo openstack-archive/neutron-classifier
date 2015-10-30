@@ -19,10 +19,10 @@ test_neutron-classifier
 Tests for `neutron-classifier` module.
 """
 
-from neutron-classifier.tests import base
+from neutron_classifier.tests import base
 
 
-class TestNeutron-classifier(base.TestCase):
+class TestNeutron_classifier(base.TestCase):
 
     def test_something(self):
         pass
