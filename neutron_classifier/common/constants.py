@@ -7,4 +7,4 @@ PROTOCOLS = ['tcp', 'udp', 'icmp', 'icmpv6']
 
 ENCAPSULATION_TYPES = ['vxlan', 'gre']
 
-NEUTRON_SERVICES = ['neutron-fwaas', 'networking-sfc']
+NEUTRON_SERVICES = ['neutron-fwaas', 'networking-sfc', 'security-group']
