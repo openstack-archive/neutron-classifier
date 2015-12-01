@@ -19,6 +19,8 @@ from sqlalchemy.orm import sessionmaker
 from oslo_utils import uuidutils
 from oslotest import base
 
+CREATED = False
+
 
 class ClassifierTestContext(object):
     "Classifier Database Context."
@@ -35,7 +37,11 @@ class DbApiTestCase(base.BaseTestCase):
     def setUp(self):
         super(DbApiTestCase, self).setUp()
         self.context = ClassifierTestContext()
-        models.Base.metadata.create_all(self.context.engine)
+
+        if not CREATED:
+            models.Base.metadata.create_all(self.context.engine)
+            global CREATED
+            CREATED = True
 
     def test_create_classifier_chain(self):
         # TODO(sc68cal) Make this not hacky, and make it pass a session
