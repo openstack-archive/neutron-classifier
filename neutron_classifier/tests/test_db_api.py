@@ -67,7 +67,9 @@ class DbApiTestCase(base.BaseTestCase):
                    'port_range_max': 80,
                    'remote_ip_prefix': 'fddf:cb3b:bc4::/48',
                    }
-        api.convert_security_group_rule_to_classifier(self.context, sg_rule)
+        result = api.convert_security_group_rule_to_classifier(self.context,
+                                                               sg_rule)
+        self.assertIsNotNone(result)
 
     def test_convert_firewall_rule_to_classifier(self):
         firewall_rule = {'protocol': 'foo',
