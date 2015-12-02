@@ -63,7 +63,36 @@ def convert_security_group_rule_to_classifier(context, security_group_rule):
 
 
 def convert_firewall_rule_to_classifier(context, firewall_rule):
-    pass
+    group = models.ClassifierGroup()
+    group.service = 'firewall_rule'
+
+    # Pull the source from the SG rule
+    cl1 = models.IpClassifier()
+    cl1.source_ip_prefix = firewall_rule['source_ip_address']
+    cl1.destination_ip_prefix = firewall_rule['destination_ip_address']
+
+    # Ports
+    cl2 = models.TransportClassifier()
+    cl2.protocol = firewall_rule['protocol']
+    cl2.source_port_range_min = firewall_rule['source_port_range_min']
+    cl2.source_port_range_max = firewall_rule['source_port_range_max']
+    chain1 = models.ClassifierChainEntry()
+    chain1.classifier_group = group
+    chain1.classifier = cl1
+    chain1.sequence = 1
+
+    chain2 = models.ClassifierChainEntry()
+    chain2.classifier_group = group
+    chain2.classifier = cl2
+    # Security Group classifiers might not need to be nested or have sequences?
+    chain2.sequence = 1
+    context.session.add(group)
+    context.session.add(cl1)
+    context.session.add(cl2)
+    context.session.add(chain1)
+    context.session.add(chain2)
+    context.session.commit()
+    return group
 
 
 def convert_classifier_chain_to_security_group(context, chain_id):

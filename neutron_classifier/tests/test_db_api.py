@@ -72,17 +72,25 @@ class DbApiTestCase(base.BaseTestCase):
         self.assertIsNotNone(result)
 
     def test_convert_firewall_rule_to_classifier(self):
-        firewall_rule = {'protocol': 'foo',
-                         'ip_version': 6,
+        firewall_rule = {'name': 'firewall_rule',
+                         'protocol': 'foo',
+                         'ip_version': 4,
                          'source_ip_address': 'fddf:cb3b:bc4::/48',
                          'destination_ip_address': 'fddf:cb3b:b33f::/48',
                          'source_port': 80,
                          'destination_port': 80,
+                         'source_port_range_min': 1,
+                         'source_port_range_max': 80,
+                         'destination_port_range_min': 1,
+                         'destination_port_range_min': 80,
                          'position': 1,
                          'action': 'ALLOW',
-                         'enabled': True
+                         'enabled': True,
+                         'tenant_id': 'fake_tenant',
                          }
-        api.convert_firewall_rule_to_classifier(self.context, firewall_rule)
+        result = api.convert_firewall_rule_to_classifier(self.context,
+                                                         firewall_rule)
+        self.assertIsNotNone(result)
 
     def test_convert_firewall_policy_to_classifier_chain(self):
         pass

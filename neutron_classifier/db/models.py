@@ -83,7 +83,6 @@ class Ipv4Classifier(Classifier):
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
     dscp_tag = sa.Column(sa.String(255))
-    protocol = sa.Enum(*constants.PROTOCOLS)
     dscp_mask = sa.Column(sa.String(255))
 
 
@@ -102,6 +101,8 @@ class TransportClassifier(Classifier):
     __mapper_args__ = {'polymorphic_identity': 'transportclassifier'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
+    
+    protocol = sa.Enum(*constants.PROTOCOLS)
     source_port_range_max = sa.Column(sa.Integer)
     source_port_range_min = sa.Column(sa.Integer)
     destination_port_range_max = sa.Column(sa.Integer)
