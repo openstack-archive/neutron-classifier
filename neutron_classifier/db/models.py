@@ -67,6 +67,24 @@ class ClassifierChainEntry(Base, HasId):
     sequence = sa.Column(sa.Integer)
     classifier_group = orm.relationship(ClassifierGroup)
 
+    def __init__(self, classifier_group=None, classifier=None, sequence=None):
+        super(ClassifierChainEntry, self).__init__()
+        self.classifier = classifier
+        self.classifier_group = classifier_group
+        self.sequence = sequence
+
+
+class DirectionClassifier(Classifier):
+    __tablename__ = 'direction_classifiers'
+    __mapper_args__ = {'polymorphic_identity': 'directionclassifier'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
+                   primary_key=True)
+    direction = sa.Column(sa.Enum(*constants.DIRECTIONS))
+
+    def __init__(self, direction=None):
+        super(DirectionClassifier, self).__init__()
+        self.direction = direction
+
 
 class EncapsulationClassifier(Classifier):
     __tablename__ = 'encapsulation_classifiers'
@@ -134,6 +152,12 @@ class TransportClassifier(Classifier):
     source_port_range_min = sa.Column(sa.Integer)
     destination_port_range_max = sa.Column(sa.Integer)
     destination_port_range_min = sa.Column(sa.Integer)
+
+    def __init__(self, dst_port_range_min=None,
+                 dst_port_range_max=None):
+        super(TransportClassifier, self).__init__()
+        self.destination_port_range_min = dst_port_range_min
+        self.destination_port_range_max = dst_port_range_max
 
 
 class VlanClassifier(Classifier):
