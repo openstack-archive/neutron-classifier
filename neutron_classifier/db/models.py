@@ -82,7 +82,7 @@ class EthernetClassifier(Classifier):
     __mapper_args__ = {'polymorphic_identity': 'ethernetclassifier'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
-    ethertype = sa.Column(sa.String(255))
+    ethertype = sa.Column(sa.Integer)
     source_mac = sa.Column(sa.String(255))
     destination_mac = sa.Column(sa.String(255))
 
@@ -111,7 +111,7 @@ class Ipv6Classifier(Classifier):
     __mapper_args__ = {'polymorphic_identity': 'ipv6classifier'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
-    next_header = sa.Enum(*constants.PROTOCOLS)
+    next_header = sa.Column(sa.Enum(*constants.PROTOCOLS))
     traffic_class = sa.Column(sa.String(255))
     flow_label = sa.Column(sa.String(255))
 
