@@ -21,6 +21,16 @@ from oslotest import base
 
 CREATED = False
 
+FAKE_SG_RULE = {'direction': 'INGRESS', 'protocol': 'tcp', 'ethertype': 6,
+                'tenant_id': 'fake_tenant', 'port_range_min': 80,
+                'port_range_max': 80, 'remote_ip_prefix': 'fddf:cb3b:bc4::/48',
+                }
+
+FAKE_SG = {'name': 'fake security group',
+           'tenant_id': uuidutils.generate_uuid(),
+           'description': 'this is fake',
+           'security_group_rules': FAKE_SG_RULE}
+
 
 class ClassifierTestContext(object):
     "Classifier Database Context."
@@ -59,16 +69,9 @@ class DbApiTestCase(base.BaseTestCase):
         self.assertIsNotNone(result)
 
     def test_convert_security_group_rule_to_classifier(self):
-        sg_rule = {'direction': 'INGRESS',
-                   'protocol': 'tcp',
-                   'ethertype': 6,
-                   'tenant_id': 'fake_tenant',
-                   'port_range_min': 80,
-                   'port_range_max': 80,
-                   'remote_ip_prefix': 'fddf:cb3b:bc4::/48',
-                   }
+
         result = api.convert_security_group_rule_to_classifier(self.context,
-                                                               sg_rule)
+                                                               FAKE_SG_RULE)
         self.assertIsNotNone(result)
 
     def test_convert_firewall_rule_to_classifier(self):
@@ -88,10 +91,17 @@ class DbApiTestCase(base.BaseTestCase):
         pass
 
     def test_convert_security_group_to_classifier_chain(self):
-        pass
+        result = api.convert_security_group_to_classifier(self.context,
+                                                          FAKE_SG)
+        self.assertIsNotNone(result)
 
     def test_convert_classifier_chain_to_security_group(self):
-        pass
+        classifier_id = api.convert_security_group_rule_to_classifier(
+            self.context, FAKE_SG_RULE).id
+        result = api.convert_classifier_group_to_security_group(self.context,
+                                                                classifier_id)
+        result['tenant_id'] = FAKE_SG_RULE['tenant_id']
+        self.assertEqual(FAKE_SG_RULE, result)
 
     def test_convert_classifier_chain_to_firewall_policy(self):
         pass

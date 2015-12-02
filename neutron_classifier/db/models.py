@@ -68,6 +68,14 @@ class ClassifierChainEntry(Base, HasId):
     classifier_group = orm.relationship(ClassifierGroup)
 
 
+class DirectionClassifier(Classifier):
+    __tablename__ = 'direction_classifiers'
+    __mapper_args__ = {'polymorphic_identity': 'directionclassifier'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
+                   primary_key=True)
+    direction = sa.Column(sa.Enum(*constants.DIRECTIONS))
+
+
 class EncapsulationClassifier(Classifier):
     __tablename__ = 'encapsulation_classifiers'
     __mapper_args__ = {'polymorphic_identity': 'encapsulationclassifier'}
