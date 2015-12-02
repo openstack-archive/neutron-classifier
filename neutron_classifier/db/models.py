@@ -68,6 +68,25 @@ class ClassifierChainEntry(Base, HasId):
     classifier_group = orm.relationship(ClassifierGroup)
 
 
+class EncapsulationClassifier(Classifier):
+    __tablename__ = 'encapsulation_classifiers'
+    __mapper_args__ = {'polymorphic_identity': 'encapsulationclassifier'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
+                   primary_key=True)
+    encapsulation_type = sa.Column(sa.Enum(*constants.ENCAPSULATION_TYPES))
+    encapsulation_id = sa.Column(sa.String(255))
+
+
+class EthernetClassifier(Classifier):
+    __tablename__ = 'ethernet_classifiers'
+    __mapper_args__ = {'polymorphic_identity': 'ethernetclassifier'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
+                   primary_key=True)
+    ethertype = sa.Column(sa.String(255))
+    source_mac = sa.Column(sa.String(255))
+    destination_mac = sa.Column(sa.String(255))
+
+
 class IpClassifier(Classifier):
     __tablename__ = 'ip_classifiers'
     __mapper_args__ = {'polymorphic_identity': 'ipclassifier'}
@@ -97,6 +116,15 @@ class Ipv6Classifier(Classifier):
     flow_label = sa.Column(sa.String(255))
 
 
+class NeutronPortClassifier(Classifier):
+    __tablename__ = 'neutron_port_classifiers'
+    __mapper_args__ = {'polymorphic_identity': 'neutronportclassifier'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
+                   primary_key=True)
+    logical_source_port = sa.Column(sa.String(255))
+    logical_destination_port = sa.Column(sa.String(255))
+
+
 class TransportClassifier(Classifier):
     __tablename__ = 'transport_classifiers'
     __mapper_args__ = {'polymorphic_identity': 'transportclassifier'}
@@ -108,37 +136,9 @@ class TransportClassifier(Classifier):
     destination_port_range_min = sa.Column(sa.Integer)
 
 
-class EthernetClassifier(Classifier):
-    __tablename__ = 'ethernet_classifiers'
-    __mapper_args__ = {'polymorphic_identity': 'ethernetclassifier'}
-    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
-                   primary_key=True)
-    ethertype = sa.Column(sa.String(255))
-    source_mac = sa.Column(sa.String(255))
-    destination_mac = sa.Column(sa.String(255))
-
-
 class VlanClassifier(Classifier):
     __tablename__ = 'vlan_classifiers'
     __mapper_args__ = {'polymorphic_identity': 'vlanclassifier'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
     vlan_priority = sa.Column(sa.Integer)
-
-
-class EncapsulationClassifier(Classifier):
-    __tablename__ = 'encapsulation_classifiers'
-    __mapper_args__ = {'polymorphic_identity': 'encapsulationclassifier'}
-    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
-                   primary_key=True)
-    encapsulation_type = sa.Column(sa.Enum(*constants.ENCAPSULATION_TYPES))
-    encapsulation_id = sa.Column(sa.String(255))
-
-
-class NeutronPortClassifier(Classifier):
-    __tablename__ = 'neutron_port_classifiers'
-    __mapper_args__ = {'polymorphic_identity': 'neutronportclassifier'}
-    id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
-                   primary_key=True)
-    logical_source_port = sa.Column(sa.String(255))
-    logical_destination_port = sa.Column(sa.String(255))
