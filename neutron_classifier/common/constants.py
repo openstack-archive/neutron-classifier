@@ -22,3 +22,8 @@ PROTOCOLS = ['tcp', 'udp', 'icmp', 'icmpv6']
 ENCAPSULATION_TYPES = ['vxlan', 'gre']
 
 NEUTRON_SERVICES = ['neutron-fwaas', 'networking-sfc', 'security-group']
+
+DIRECTIONS = ['INGRESS', 'EGRESS']
+
+ETHERTYPE_IPV4 = 0x0800
+ETHERTYPE_IPV6 = 0x86DD
