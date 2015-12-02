@@ -102,7 +102,7 @@ class Ipv4Classifier(Classifier):
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
     dscp_tag = sa.Column(sa.String(255))
-    protocol = sa.Enum(*constants.PROTOCOLS)
+    protocol = sa.column(sa.Enum(*constants.PROTOCOLS))
     dscp_mask = sa.Column(sa.String(255))
 
 
