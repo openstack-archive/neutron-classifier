@@ -31,6 +31,22 @@ FAKE_SG = {'name': 'fake security group',
            'description': 'this is fake',
            'security_group_rules': [FAKE_SG_RULE]}
 
+FAKE_FW_RULE = {'name': 'firewall_rule', 'protocol': 'foo', 'ip_version': 4,
+                'source_ip_address': 'fddf:cb3b:bc4::/48',
+                'destination_ip_address': 'fddf:cb3b:b33f::/48',
+                'source_port': 80, 'destination_port': 80,
+                'source_port_range_min': 1, 'source_port_range_max': 80,
+                'destination_port_range_min': 1,
+                'destination_port_range_min': 80,
+                'position': 1, 'action': 'ALLOW', 'enabled': True,
+                'tenant_id': 'fake_tenant',
+                }
+
+FAKE_FW = {'name': 'fake firewall policy',
+           'tenant_id': uuidutils.generate_uuid(),
+           'description': 'this is fake',
+           'firewall_rules': [FAKE_FW_RULE]}
+
 
 class ClassifierTestContext(object):
     "Classifier Database Context."
@@ -83,20 +99,21 @@ class DbApiTestCase(base.BaseTestCase):
         self.assertGreater(len(cg.classifier_chain), 0)
 
     def test_convert_firewall_rule_to_classifier(self):
-        firewall_rule = {'protocol': 'foo',
-                         'ip_version': 6,
-                         'source_ip_address': 'fddf:cb3b:bc4::/48',
-                         'destination_ip_address': 'fddf:cb3b:b33f::/48',
-                         'source_port': 80,
-                         'destination_port': 80,
-                         'position': 1,
-                         'action': 'ALLOW',
-                         'enabled': True
-                         }
-        api.convert_firewall_rule_to_classifier(self.context, firewall_rule)
+        cg = self._create_classifier_group('firewall-rule')
+        api.convert_firewall_rule_to_classifier(self.context, FAKE_FW_RULE, cg)
+
+        # Save to the database
+        self.context.session.add(cg)
+        self.context.session.commit()
+
+        # Refresh the classifier group from the DB
+        cg = api.get_classifier_group(self.context, cg.id)
+        self.assertGreater(len(cg.classifier_chain), 0)
 
     def test_convert_firewall_policy_to_classifier_chain(self):
-        pass
+        result = api.convert_firewall_policy_to_classifier(self.context,
+                                                           FAKE_FW)
+        self.assertIsNotNone(result)
 
     def test_convert_security_group_to_classifier_chain(self):
         result = api.convert_security_group_to_classifier(self.context,
@@ -111,5 +128,10 @@ class DbApiTestCase(base.BaseTestCase):
         result['tenant_id'] = FAKE_SG_RULE['tenant_id']
         self.assertEqual(FAKE_SG_RULE, result)
 
-    def test_convert_classifier_chain_to_firewall_policy(self):
-        pass
+    def test_convert_classifier_chain_to_firewall(self):
+        classifier_id = api.convert_firewall_policy_to_classifier(
+            self.context, FAKE_FW).id
+        result = api.convert_classifier_to_firewall(self.context,
+                                                    classifier_id)
+        result['tenant_id'] = FAKE_FW_RULE['tenant_id']
+        self.assertEqual(FAKE_FW_RULE, result)
