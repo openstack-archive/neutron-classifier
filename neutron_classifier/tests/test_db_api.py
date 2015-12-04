@@ -19,7 +19,6 @@ from sqlalchemy.orm import sessionmaker
 from oslo_utils import uuidutils
 from oslotest import base
 
-CREATED = False
 
 FAKE_SG_RULE = {'direction': 'INGRESS', 'protocol': 'tcp', 'ethertype': 'IPv6',
                 'tenant_id': 'fake_tenant', 'port_range_min': 80,
@@ -47,11 +46,7 @@ class DbApiTestCase(base.BaseTestCase):
     def setUp(self):
         super(DbApiTestCase, self).setUp()
         self.context = ClassifierTestContext()
-
-        if not CREATED:
-            models.Base.metadata.create_all(self.context.engine)
-            global CREATED
-            CREATED = True
+        models.Base.metadata.create_all(self.context.engine)
 
     def _create_classifier_group(self, service):
         cg = models.ClassifierGroup()
