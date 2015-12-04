@@ -58,6 +58,16 @@ def convert_security_group_to_classifier(context, security_group):
     return cgroup
 
 
+def convert_firewall_policy_to_classifier(context, firewall):
+    cgroup = models.ClassifierGroup()
+    cgroup.service = 'firewall-rule'
+    for rule in firewall['firewall_rules']:
+        convert_firewall_rule_to_classifier(context, rule, cgroup)
+    context.session.add(cgroup)
+    context.session.commit()
+    return cgroup
+
+
 def convert_security_group_rule_to_classifier(context, sgr, group):
     # Pull the source from the SG rule
     cl1 = models.IpClassifier()
@@ -88,8 +98,33 @@ def convert_security_group_rule_to_classifier(context, sgr, group):
     create_classifier_chain(group, classifiers)
 
 
-def convert_firewall_rule_to_classifier(context, firewall_rule):
-    pass
+def convert_firewall_rule_to_classifier(context, firewall_rule, group):
+    # ip_version
+    cl1 = models.EthernetClassifier()
+    cl1.ethertype = firewall_rule['ip_version']
+
+    # protocol
+    if cl1.ethertype == constants.ETHERTYPE_IPV6:
+        cl2 = models.Ipv6Classifier()
+        cl2.next_header = firewall_rule['protocol']
+    else:
+        cl2 = models.Ipv4Classifier()
+        cl2.protocol = firewall_rule['protocol']
+
+    # Source and destination ip
+    cl3 = models.IpClassifier()
+    cl3.source_ip_prefix = firewall_rule['source_ip_address']
+    cl3.destination_ip_prefix = firewall_rule['destination_ip_address']
+
+    # Ports
+    cl4 = models.TransportClassifier(
+        dst_port_range_min=firewall_rule['destination_port_range_min'],
+        dst_port_range_max=firewall_rule['destination_port_range_max'])
+    cl4.source_port_range_min = firewall_rule['source_port_range_min']
+    cl4.source_port_range_max = firewall_rule['source_port_range_max']
+
+    classifiers = [cl1, cl2, cl3, cl4]
+    create_classifier_chain(group, classifiers)
 
 
 def convert_classifier_group_to_security_group(context, classifier_group_id):
@@ -121,5 +156,36 @@ def convert_classifier_group_to_security_group(context, classifier_group_id):
     return sg_dict
 
 
-def convert_classifier_to_firewall_policy(context, chain_id):
-    pass
+def convert_classifier_to_firewall(context, classifier_group_id):
+    fw_dict = {}
+    cg = get_classifier_group(context, classifier_group_id)
+    for classifier in [link.classifier for link in cg.classifier_chain]:
+        classifier_type = type(classifier)
+
+        if classifier_type is models.EthernetClassifier:
+            fw_dict['ip_version'] = classifier.ethertype
+            continue
+
+        if classifier_type is models.Ipv4Classifier:
+            fw_dict['protocol'] = classifier.protcol
+            continue
+        elif classifier_type is models.Ipv6Classifier:
+            fw_dict['protocol'] = classifier.next_header
+            continue
+
+        if classifier_type is models.TransportClassifier:
+            fw_dict['source_port_range_min'] = classifier.source_port_range_min
+            fw_dict['source_port_range_max'] = classifier.source_port_range_max
+            fw_dict['destination_port_range_min'] = \
+                classifier.destination_port_range_min
+            fw_dict['destination_port_range_max'] = \
+                classifier.destination_port_range_max
+            continue
+
+        if classifier_type is models.IpClassifier:
+            fw_dict['source_ip_address'] = classifier.source_ip_prefix
+            fw_dict['destination_ip_address'] = \
+                classifier.destination_ip_prefix
+            continue
+
+    return fw_dict
