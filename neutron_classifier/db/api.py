@@ -1,4 +1,5 @@
 # Copyright (c) 2015 Mirantis, Inc.
+# Copyright (c) 2015 Huawei Technologies India Pvt Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -88,10 +89,6 @@ def convert_security_group_rule_to_classifier(context, sgr, group):
     create_classifier_chain(group, classifiers)
 
 
-def convert_firewall_rule_to_classifier(context, firewall_rule):
-    pass
-
-
 def convert_classifier_group_to_security_group(context, classifier_group_id):
     sg_dict = {}
     cg = get_classifier_group(context, classifier_group_id)
@@ -112,7 +109,7 @@ def convert_classifier_group_to_security_group(context, classifier_group_id):
                 classifier.ethertype)
             continue
         if classifier_type is models.Ipv4Classifier:
-            sg_dict['protocol'] = classifier.protcol
+            sg_dict['protocol'] = classifier.protocol
             continue
         if classifier_type is models.Ipv6Classifier:
             sg_dict['protocol'] = classifier.next_header
@@ -121,5 +118,71 @@ def convert_classifier_group_to_security_group(context, classifier_group_id):
     return sg_dict
 
 
-def convert_classifier_to_firewall_policy(context, chain_id):
-    pass
+def convert_firewall_policy_to_classifier(context, firewall):
+    cgroup = models.ClassifierGroup()
+    cgroup.service = 'neutron-fwaas'
+    for rule in firewall['firewall_rules']:
+        convert_firewall_rule_to_classifier(context, rule, cgroup)
+    context.session.add(cgroup)
+    context.session.commit()
+    return cgroup
+
+
+def convert_firewall_rule_to_classifier(context, fw_rule, group):
+    # ip_version
+    cl1 = models.EthernetClassifier()
+    cl1.ethertype = fw_rule['ip_version']
+
+    # protocol
+    if cl1.ethertype == constants.IP_VERSION_6:
+        cl2 = models.Ipv6Classifier()
+        cl2.next_header = fw_rule['protocol']
+    else:
+        cl2 = models.Ipv4Classifier()
+        cl2.protocol = fw_rule['protocol']
+
+    # Source and destination ip
+    cl3 = models.IpClassifier()
+    cl3.source_ip_prefix = fw_rule['source_ip_address']
+    cl3.destination_ip_prefix = fw_rule['destination_ip_address']
+
+    # Ports
+    cl4 = models.TransportClassifier(
+        dst_port_range_min=fw_rule['destination_port_range_min'],
+        dst_port_range_max=fw_rule['destination_port_range_max'])
+    cl4.source_port_range_min = fw_rule['source_port_range_min']
+    cl4.source_port_range_max = fw_rule['source_port_range_max']
+
+    classifiers = [cl1, cl2, cl3, cl4]
+    create_classifier_chain(group, classifiers)
+
+
+def convert_classifier_to_firewall(context, classifier_group_id):
+    fw_rule = {}
+    cg = get_classifier_group(context, classifier_group_id)
+    for classifier in [link.classifier for link in cg.classifier_chain]:
+        classifier_type = type(classifier)
+        if classifier_type is models.EthernetClassifier:
+            fw_rule['ip_version'] = classifier.ethertype
+            continue
+        if classifier_type is models.Ipv4Classifier:
+            fw_rule['protocol'] = classifier.protocol
+            continue
+        if classifier_type is models.Ipv6Classifier:
+            fw_rule['protocol'] = classifier.next_header
+            continue
+        if classifier_type is models.TransportClassifier:
+            fw_rule['source_port_range_min'] = classifier.source_port_range_min
+            fw_rule['source_port_range_max'] = classifier.source_port_range_max
+            fw_rule['destination_port_range_min'] = \
+                classifier.destination_port_range_min
+            fw_rule['destination_port_range_max'] = \
+                classifier.destination_port_range_max
+            continue
+        if classifier_type is models.IpClassifier:
+            fw_rule['source_ip_address'] = classifier.source_ip_prefix
+            fw_rule['destination_ip_address'] = \
+                classifier.destination_ip_prefix
+            continue
+
+    return fw_rule

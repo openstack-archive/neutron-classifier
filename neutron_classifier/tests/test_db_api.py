@@ -1,4 +1,5 @@
 # Copyright (c) 2015 Mirantis, Inc.
+# Copyright (c) 2015 Huawei Technologies India Pvt Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,7 +20,6 @@ from sqlalchemy.orm import sessionmaker
 from oslo_utils import uuidutils
 from oslotest import base
 
-CREATED = False
 
 FAKE_SG_RULE = {'direction': 'INGRESS', 'protocol': 'tcp', 'ethertype': 'IPv6',
                 'tenant_id': 'fake_tenant', 'port_range_min': 80,
@@ -30,6 +30,20 @@ FAKE_SG = {'name': 'fake security group',
            'tenant_id': uuidutils.generate_uuid(),
            'description': 'this is fake',
            'security_group_rules': [FAKE_SG_RULE]}
+
+FAKE_FW_RULE = {'ip_version': 6, 'protocol': 'udp',
+                'source_port_range_min': 1, 'source_port_range_max': 80,
+                'destination_port_range_min': 1,
+                'destination_port_range_max': 80,
+                'source_ip_address': 'fddf:cb3b:bc4::/48',
+                'destination_ip_address': 'fddf:cb3b:b33f::/48',
+                'tenant_id': 'fake_tenant',
+                }
+
+FAKE_FW = {'name': 'fake firewall policy',
+           'tenant_id': uuidutils.generate_uuid(),
+           'description': 'this is fake',
+           'firewall_rules': [FAKE_FW_RULE]}
 
 
 class ClassifierTestContext(object):
@@ -47,12 +61,9 @@ class DbApiTestCase(base.BaseTestCase):
     def setUp(self):
         super(DbApiTestCase, self).setUp()
         self.context = ClassifierTestContext()
+        models.Base.metadata.create_all(self.context.engine)
 
-        if not CREATED:
-            models.Base.metadata.create_all(self.context.engine)
-            global CREATED
-            CREATED = True
-
+    # Common testcases
     def _create_classifier_group(self, service):
         cg = models.ClassifierGroup()
         cg.tenant_id = uuidutils.generate_uuid()
@@ -62,13 +73,14 @@ class DbApiTestCase(base.BaseTestCase):
         return cg
 
     def test_create_classifier_chain(self):
-        cg = self._create_classifier_group('neutron-fwaas')
+        cg = self._create_classifier_group('networking-sfc')
         ipc = models.IpClassifier()
         ipc.destination_ip_prefix = 'fd70:fbb6:449e::/48'
         ipc.source_ip_prefix = 'fddf:cb3b:bc4::/48'
         api.create_classifier_chain(cg, [ipc])
         self.assertGreater(len(cg.classifier_chain), 0)
 
+    # SG testcases
     def test_convert_security_group_rule_to_classifier(self):
         # TODO(sc68cal) make this not call session.commit directly
         cg = self._create_classifier_group('security-group')
@@ -81,22 +93,6 @@ class DbApiTestCase(base.BaseTestCase):
         # Refresh the classifier group from the DB
         cg = api.get_classifier_group(self.context, cg.id)
         self.assertGreater(len(cg.classifier_chain), 0)
-
-    def test_convert_firewall_rule_to_classifier(self):
-        firewall_rule = {'protocol': 'foo',
-                         'ip_version': 6,
-                         'source_ip_address': 'fddf:cb3b:bc4::/48',
-                         'destination_ip_address': 'fddf:cb3b:b33f::/48',
-                         'source_port': 80,
-                         'destination_port': 80,
-                         'position': 1,
-                         'action': 'ALLOW',
-                         'enabled': True
-                         }
-        api.convert_firewall_rule_to_classifier(self.context, firewall_rule)
-
-    def test_convert_firewall_policy_to_classifier_chain(self):
-        pass
 
     def test_convert_security_group_to_classifier_chain(self):
         result = api.convert_security_group_to_classifier(self.context,
@@ -111,5 +107,28 @@ class DbApiTestCase(base.BaseTestCase):
         result['tenant_id'] = FAKE_SG_RULE['tenant_id']
         self.assertEqual(FAKE_SG_RULE, result)
 
-    def test_convert_classifier_chain_to_firewall_policy(self):
-        pass
+    # Firewall testcases
+    def test_convert_firewall_rule_to_classifier(self):
+        cg = self._create_classifier_group('neutron-fwaas')
+        api.convert_firewall_rule_to_classifier(self.context, FAKE_FW_RULE, cg)
+
+        # Save to the database
+        self.context.session.add(cg)
+        self.context.session.commit()
+
+        # Refresh the classifier group from the DB
+        cg = api.get_classifier_group(self.context, cg.id)
+        self.assertGreater(len(cg.classifier_chain), 0)
+
+    def test_convert_firewall_policy_to_classifier_chain(self):
+        result = api.convert_firewall_policy_to_classifier(self.context,
+                                                           FAKE_FW)
+        self.assertIsNotNone(result)
+
+    def test_convert_classifier_chain_to_firewall(self):
+        classifier_id = api.convert_firewall_policy_to_classifier(
+            self.context, FAKE_FW).id
+        result = api.convert_classifier_to_firewall(self.context,
+                                                    classifier_id)
+        result['tenant_id'] = FAKE_FW_RULE['tenant_id']
+        self.assertEqual(FAKE_FW_RULE, result)
