@@ -153,11 +153,15 @@ class TransportClassifier(Classifier):
     destination_port_range_max = sa.Column(sa.Integer)
     destination_port_range_min = sa.Column(sa.Integer)
 
-    def __init__(self, dst_port_range_min=None,
-                 dst_port_range_max=None):
+    def __init__(self, source_port_range_min=None,
+                 source_port_range_max=None,
+                 destination_port_range_min=None,
+                 destination_port_range_max=None):
         super(TransportClassifier, self).__init__()
-        self.destination_port_range_min = dst_port_range_min
-        self.destination_port_range_max = dst_port_range_max
+        self.destination_port_range_min = destination_port_range_min
+        self.destination_port_range_max = destination_port_range_max
+        self.source_port_range_min = source_port_range_min
+        self.source_port_range_max = source_port_range_max
 
 
 class VlanClassifier(Classifier):

@@ -65,8 +65,8 @@ def convert_security_group_rule_to_classifier(context, sgr, group):
 
     # Ports
     cl2 = models.TransportClassifier(
-        dst_port_range_min=sgr['port_range_min'],
-        dst_port_range_max=sgr['port_range_max'])
+        destination_port_range_min=sgr['port_range_min'],
+        destination_port_range_max=sgr['port_range_max'])
 
     # Direction
     cl3 = models.DirectionClassifier(
