@@ -20,15 +20,18 @@ from oslo_utils import uuidutils
 from oslotest import base
 
 
-FAKE_SG_RULE = {'direction': 'INGRESS', 'protocol': 'tcp', 'ethertype': 'IPv6',
-                'tenant_id': 'fake_tenant', 'port_range_min': 80,
-                'port_range_max': 80, 'remote_ip_prefix': 'fddf:cb3b:bc4::/48',
-                }
+FAKE_SG_V6_RULE_V6 = {'direction': 'INGRESS', 'protocol': 'tcp', 'ethertype':
+                      'IPv6', 'tenant_id': 'fake_tenant', 'port_range_min': 80,
+                      'port_range_max': 80, 'remote_ip_prefix':
+                      'fddf:cb3b:bc4::/48', }
 
-FAKE_SG = {'name': 'fake security group',
-           'tenant_id': uuidutils.generate_uuid(),
-           'description': 'this is fake',
-           'security_group_rules': [FAKE_SG_RULE]}
+FAKE_SG_V6_RULE_V4 = {'direction': 'INGRESS', 'protocol': 'tcp', 'ethertype':
+                      'IPv4', 'tenant_id': 'fake_tenant', 'port_range_min': 80,
+                      'port_range_max': 80, 'remote_ip_prefix': '10.0.0.0/8', }
+
+FAKE_SG_V6 = {'name': 'fake security group', 'tenant_id':
+              uuidutils.generate_uuid(), 'description': 'this is fake',
+              'security_group_rules': [FAKE_SG_V6_RULE_V6]}
 
 
 class ClassifierTestContext(object):
@@ -64,11 +67,12 @@ class DbApiTestCase(base.BaseTestCase):
         api.create_classifier_chain(cg, [ipc])
         self.assertGreater(len(cg.classifier_chain), 0)
 
-    def test_convert_security_group_rule_to_classifier(self):
+    def _test_convert_security_group_rule_to_classifier(self,
+                                                        security_group_rule):
         # TODO(sc68cal) make this not call session.commit directly
         cg = self._create_classifier_group('security-group')
         api.convert_security_group_rule_to_classifier(self.context,
-                                                      FAKE_SG_RULE, cg)
+                                                      security_group_rule, cg)
         # Save to the database
         self.context.session.add(cg)
         self.context.session.commit()
@@ -76,6 +80,12 @@ class DbApiTestCase(base.BaseTestCase):
         # Refresh the classifier group from the DB
         cg = api.get_classifier_group(self.context, cg.id)
         self.assertGreater(len(cg.classifier_chain), 0)
+
+    def test_convert_security_group_rule_v4_to_classifier(self):
+        self._test_convert_security_group_rule_to_classifier(FAKE_SG_V6_RULE_V4)
+
+    def test_convert_security_group_rule_v6_to_classifier(self):
+        self._test_convert_security_group_rule_to_classifier(FAKE_SG_V6_RULE_V6)
 
     def test_convert_firewall_rule_to_classifier(self):
         firewall_rule = {'protocol': 'foo',
@@ -95,16 +105,16 @@ class DbApiTestCase(base.BaseTestCase):
 
     def test_convert_security_group_to_classifier_chain(self):
         result = api.convert_security_group_to_classifier(self.context,
-                                                          FAKE_SG)
+                                                          FAKE_SG_V6)
         self.assertIsNotNone(result)
 
     def test_convert_classifier_chain_to_security_group(self):
         classifier_id = api.convert_security_group_to_classifier(
-            self.context, FAKE_SG).id
+            self.context, FAKE_SG_V6).id
         result = api.convert_classifier_group_to_security_group(self.context,
                                                                 classifier_id)
-        result['tenant_id'] = FAKE_SG_RULE['tenant_id']
-        self.assertEqual(FAKE_SG_RULE, result)
+        result['tenant_id'] = FAKE_SG_V6_RULE_V6['tenant_id']
+        self.assertEqual(FAKE_SG_V6_RULE_V6, result)
 
     def test_convert_classifier_chain_to_firewall_policy(self):
         pass
