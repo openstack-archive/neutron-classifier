@@ -112,7 +112,7 @@ def convert_classifier_group_to_security_group(context, classifier_group_id):
                 classifier.ethertype)
             continue
         if classifier_type is models.Ipv4Classifier:
-            sg_dict['protocol'] = classifier.protcol
+            sg_dict['protocol'] = classifier.protocol
             continue
         if classifier_type is models.Ipv6Classifier:
             sg_dict['protocol'] = classifier.next_header
