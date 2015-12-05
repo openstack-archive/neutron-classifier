@@ -1,4 +1,5 @@
 # Copyright (c) 2015 Mirantis, Inc.
+# Copyright (c) 2015 Huawei Technologies India Pvt Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -27,6 +28,9 @@ DIRECTIONS = ['INGRESS', 'EGRESS', 'BIDIRECTIONAL']
 
 ETHERTYPE_IPV4 = 0x0800
 ETHERTYPE_IPV6 = 0x86DD
+
+IP_VERSION_4 = 4
+IP_VERSION_6 = 6
 
 SECURITYGROUP_ETHERTYPE_IPV4 = 'IPv4'
 SECURITYGROUP_ETHERTYPE_IPV6 = 'IPv6'
