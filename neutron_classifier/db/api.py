@@ -15,6 +15,7 @@
 
 from neutron_classifier.common import constants
 from neutron_classifier.db import models
+from neutron_classifier.db import validators
 
 
 def security_group_ethertype_to_ethertype_value(ethertype):
@@ -60,30 +61,37 @@ def convert_security_group_to_classifier(context, security_group):
 
 
 def convert_security_group_rule_to_classifier(context, sgr, group):
-    # Pull the source from the SG rule
-    cl1 = models.IpClassifier()
-    cl1.source_ip_prefix = sgr['remote_ip_prefix']
-
-    # Ports
-    cl2 = models.TransportClassifier(
-        destination_port_range_min=sgr['port_range_min'],
-        destination_port_range_max=sgr['port_range_max'])
-
-    # Direction
-    cl3 = models.DirectionClassifier(
-        direction=sgr['direction'])
+    cl1 = cl2 = cl3 = cl4 = cl5 = None
 
     # Ethertype
-    cl4 = models.EthernetClassifier()
-    cl4.ethertype = security_group_ethertype_to_ethertype_value(
-        sgr['ethertype'])
+    if validators.is_ethernetclassifier_valid(sgr, validators.SG_RULE_TYPE):
+        cl1 = models.EthernetClassifier()
+        cl1.ethertype = security_group_ethertype_to_ethertype_value(
+            sgr['ethertype'])
 
-    if cl4.ethertype == constants.ETHERTYPE_IPV6:
-        cl5 = models.Ipv6Classifier()
-        cl5.next_header = sgr['protocol']
-    else:
-        cl5 = models.Ipv4Classifier()
-        cl5.protocol = sgr['protocol']
+    # protocol
+    if validators.is_protocolclassifier_valid(sgr, validators.SG_RULE_TYPE):
+        if cl1 and cl1.ethertype == constants.ETHERTYPE_IPV6:
+            cl2 = models.Ipv6Classifier()
+            cl2.next_header = sgr['protocol']
+        else:
+            cl2 = models.Ipv4Classifier()
+            cl2.protocol = sgr['protocol']
+
+    # remote ip
+    if validators.is_ipclassifier_valid(sgr, validators.SG_RULE_TYPE):
+        cl3 = models.IpClassifier()
+        cl3.source_ip_prefix = sgr['remote_ip_prefix']
+
+    # Ports
+    if validators.is_transportclassifier_valid(sgr, validators.SG_RULE_TYPE):
+        cl4 = models.TransportClassifier(
+            destination_port_range_min=sgr['port_range_min'],
+            destination_port_range_max=sgr['port_range_max'])
+
+    # Direction
+    if validators.is_directionclassifier_valid(sgr, validators.SG_RULE_TYPE):
+        cl5 = models.DirectionClassifier(direction=sgr['direction'])
 
     classifiers = [cl1, cl2, cl3, cl4, cl5]
     create_classifier_chain(group, classifiers)
@@ -128,30 +136,36 @@ def convert_firewall_policy_to_classifier(context, firewall):
     return cgroup
 
 
-def convert_firewall_rule_to_classifier(context, fw_rule, group):
+def convert_firewall_rule_to_classifier(context, fwr, group):
+    cl1 = cl2 = cl3 = cl4 = None
+
     # ip_version
-    cl1 = models.EthernetClassifier()
-    cl1.ethertype = fw_rule['ip_version']
+    if validators.is_ethernetclassifier_valid(fwr, validators.FW_RULE_TYPE):
+        cl1 = models.EthernetClassifier()
+        cl1.ethertype = fwr['ip_version']
 
     # protocol
-    if cl1.ethertype == constants.IP_VERSION_6:
-        cl2 = models.Ipv6Classifier()
-        cl2.next_header = fw_rule['protocol']
-    else:
-        cl2 = models.Ipv4Classifier()
-        cl2.protocol = fw_rule['protocol']
+    if validators.is_protocolclassifier_valid(fwr, validators.FW_RULE_TYPE):
+        if cl1.ethertype == constants.IP_VERSION_6:
+            cl2 = models.Ipv6Classifier()
+            cl2.next_header = fwr['protocol']
+        else:
+            cl2 = models.Ipv4Classifier()
+            cl2.protocol = fwr['protocol']
 
     # Source and destination ip
-    cl3 = models.IpClassifier()
-    cl3.source_ip_prefix = fw_rule['source_ip_address']
-    cl3.destination_ip_prefix = fw_rule['destination_ip_address']
+    if validators.is_ipclassifier_valid(fwr, validators.FW_RULE_TYPE):
+        cl3 = models.IpClassifier()
+        cl3.source_ip_prefix = fwr['source_ip_address']
+        cl3.destination_ip_prefix = fwr['destination_ip_address']
 
     # Ports
-    cl4 = models.TransportClassifier(
-        source_port_range_min=fw_rule['source_port_range_min'],
-        source_port_range_max=fw_rule['source_port_range_max'],
-        destination_port_range_min=fw_rule['destination_port_range_min'],
-        destination_port_range_max=fw_rule['destination_port_range_max'])
+    if validators.is_transportclassifier_valid(fwr, validators.FW_RULE_TYPE):
+        cl4 = models.TransportClassifier(
+            source_port_range_min=fwr['source_port_range_min'],
+            source_port_range_max=fwr['source_port_range_max'],
+            destination_port_range_min=fwr['destination_port_range_min'],
+            destination_port_range_max=fwr['destination_port_range_max'])
 
     classifiers = [cl1, cl2, cl3, cl4]
     create_classifier_chain(group, classifiers)
