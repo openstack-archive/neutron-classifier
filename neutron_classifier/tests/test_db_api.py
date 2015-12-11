@@ -12,6 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import copy as cp
 from neutron_classifier.db import api
 from neutron_classifier.db import models
 import sqlalchemy as sa
@@ -129,6 +130,54 @@ class DbApiTestCase(base.BaseTestCase):
         result['tenant_id'] = FAKE_SG_RULE_V6['tenant_id']
         self.assertEqual(FAKE_SG_RULE_V6, result)
 
+    def _test_convert_sg_rule_to_classifier_exception(self, sg_rule):
+        try:
+            self._test_convert_security_group_rule_to_classifier(sg_rule)
+        except Exception:
+            pass
+
+    def test_convert_sg_rule_to_classifier_with_no_ethertype(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V4)
+        del FAKE_SG_RULE['ethertype']
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
+    # test case for invalid ip-version
+    def test_convert_sg_rule_to_classifier_with_invalid_ethertype(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V4)
+        FAKE_SG_RULE['ethertype'] = 'IPvx'
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
+    # test case for protocol none
+    def test_convert_sg_rule_to_classifier_with_None_protocol(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V4)
+        del FAKE_SG_RULE['protocol']
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
+    # can not allow icmpv6 protocol with IPv4 version
+    def test_convert_sg_rule_to_classifier_with_icmpv6_protocol(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V4)
+        FAKE_SG_RULE['protocol'] = 'icmpv6'
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
+    # ip-version is 4 and remote ip as v6 address
+    def test_convert_sg_rule_to_classifier_with_invalid_remote_ipv6(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V4)
+        FAKE_SG_RULE['remote_ip_prefix'] = 'fddf:cb3b:bc4::/48'
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
+    # ip-version is 6 and remote ip as v4 address
+    def test_convert_sg_rule_to_classifier_with_invalid_dest_ipv4(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V6)
+        FAKE_SG_RULE['remote_ip_prefix'] = '1.2.3.4/24'
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
+    # invalid port-range
+    def test_convert_sg_rule_to_classifier_with_invalid_port_range(self):
+        FAKE_SG_RULE = cp.copy(FAKE_SG_RULE_V4)
+        FAKE_SG_RULE['port_range_min'] = 200
+        FAKE_SG_RULE['port_range_max'] = 10
+        self._test_convert_sg_rule_to_classifier_exception(FAKE_SG_RULE)
+
     # Firewall testcases
     def _test_convert_firewall_rule_to_classifier(self, fw_rule):
         cg = self._create_classifier_group('neutron-fwaas')
@@ -168,3 +217,48 @@ class DbApiTestCase(base.BaseTestCase):
         result['action'] = FAKE_FW_RULE_V6['action']
         result['enabled'] = FAKE_FW_RULE_V6['enabled']
         self.assertEqual(FAKE_FW_RULE_V6, result)
+
+    def _test_convert_firewall_rule_to_classifier_exception(self, fw_rule):
+        try:
+            self._test_convert_firewall_rule_to_classifier(fw_rule)
+        except Exception:
+            pass
+
+    # test case for invalid ip-version
+    def test_convert_firewall_rule_to_classifier_with_invalid_ip_version(self):
+        FAKE_FW_RULE = cp.copy(FAKE_FW_RULE_V4)
+        FAKE_FW_RULE['ip_version'] = 5
+        self._test_convert_firewall_rule_to_classifier_exception(FAKE_FW_RULE)
+
+    # test case for protocol none
+    def test_convert_firewall_rule_to_classifier_with_None_protocol(self):
+        FAKE_FW_RULE = cp.copy(FAKE_FW_RULE_V4)
+        del FAKE_FW_RULE['protocol']
+        self._test_convert_firewall_rule_to_classifier_exception(FAKE_FW_RULE)
+
+    # icmp protocol with valid port range
+    def test_convert_firewall_rule_to_classifier_with_icmp_protocol(self):
+        FAKE_FW_RULE = cp.copy(FAKE_FW_RULE_V4)
+        FAKE_FW_RULE['protocol'] = 'icmp'
+        self._test_convert_firewall_rule_to_classifier_exception(FAKE_FW_RULE)
+
+    # ip-version is 4 and source ip as v6 address
+    def test_convert_firewall_rule_to_classifier_with_invalid_source_ip(self):
+        FAKE_FW_RULE = cp.copy(FAKE_FW_RULE_V4)
+        FAKE_FW_RULE['source_ip_address'] = 'fddf:cb3b:bc4::/48'
+        self._test_convert_firewall_rule_to_classifier_exception(FAKE_FW_RULE)
+
+    # ip-version is 6 and dest ip as v4 address
+    def test_convert_firewall_rule_to_classifier_with_invalid_dest_ip(self):
+        FAKE_FW_RULE = cp.copy(FAKE_FW_RULE_V6)
+        FAKE_FW_RULE['destination_ip_address'] = '1.2.3.4/24'
+        self._test_convert_firewall_rule_to_classifier_exception(FAKE_FW_RULE)
+
+    # invalid port-range
+    def test_convert_firewall_rule_to_classifier_with_invalid_port_range(self):
+        FAKE_FW_RULE = cp.copy(FAKE_FW_RULE_V4)
+        FAKE_FW_RULE['source_port_range_min'] = 200
+        FAKE_FW_RULE['source_port_range_max'] = 10
+        FAKE_FW_RULE['source_port_range_min'] = 100
+        FAKE_FW_RULE['source_port_range_max'] = 10
+        self._test_convert_firewall_rule_to_classifier_exception(FAKE_FW_RULE)
