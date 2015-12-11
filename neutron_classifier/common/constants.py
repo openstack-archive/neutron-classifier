@@ -13,8 +13,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
+CLASSIFIER_TYPES = ['ip_classifier', 'ipv4_classifier', 'ipv6_classifier',
+                    'transport_classifier', 'ethernet_classifier',
+                    'encapsulation_classifier', 'neutron_port_classifier']
+
+# Protocol names and numbers
+PROTO_NAME_ICMP = 'icmp'
+PROTO_NAME_ICMP_V6 = 'icmpv6'
+PROTO_NAME_TCP = 'tcp'
+PROTO_NAME_UDP = 'udp'
+
 # TODO(sc68cal) add more protocols`
-PROTOCOLS = ['tcp', 'udp', 'icmp', 'icmpv6']
+PROTOCOLS = [PROTO_NAME_ICMP, PROTO_NAME_ICMP_V6,
+             PROTO_NAME_TCP, PROTO_NAME_UDP]
 
 ENCAPSULATION_TYPES = ['vxlan', 'gre']
 
