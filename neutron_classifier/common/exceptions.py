@@ -13,60 +13,27 @@
 # under the License.
 
 """
-neutron-classifier base exception handling.
+neutron-classifier exception handling.
 """
 
-from oslo_utils import excutils
-import six
+from neutron_lib.exceptions import *  # noqa
 
 
-# Below code is copied from neutron/common/exceptions.py
-class ClassifierException(Exception):
-    """Base neutron-classifier Exception.
-
-    To correctly use this class, inherit from it and define
-    a 'message' property. That message will get printf'd
-    with the keyword arguments provided to the constructor.
-    """
-    message = ("An unknown exception occurred.")
-
-    def __init__(self, **kwargs):
-        try:
-            super(ClassifierException, self).__init__(self.message % kwargs)
-            self.msg = self.message % kwargs
-        except Exception:
-            with excutils.save_and_reraise_exception() as ctxt:
-                if not self.use_fatal_exceptions():
-                    ctxt.reraise = False
-                    # at least get the core message out if something happened
-                    super(ClassifierException, self).__init__(self.message)
-
-    if six.PY2:
-        def __unicode__(self):
-            return unicode(self.msg)
-
-    def __str__(self):
-        return self.msg
-
-    def use_fatal_exceptions(self):
-        return False
+class InvalidEthernetClassifier(NeutronException):
+    message = ('Invalid ethernet classifier value for %(eth_type)s.')
 
 
-class InvalidEthernetClassifier(ClassifierException):
-    message = ("Invalid ethernet classifier value for %(eth_type)s.")
-
-
-class EthertypeConflictWithProtocol(ClassifierException):
+class EthertypeConflictWithProtocol(NeutronException):
     message = ("Invalid ethertype %(ethertype)s for protocol %(protocol)s.")
 
 
-class IpAddressConflict(ClassifierException):
+class IpAddressConflict(NeutronException):
     message = ("IP address do not agree with the given IP Version.")
 
 
-class InvalidICMPParameter(ClassifierException):
+class InvalidICMPParameter(NeutronException):
     message = ("%(param)s are not allowed when protocol is set to ICMP.")
 
 
-class InvalidPortRange(ClassifierException):
+class InvalidPortRange(NeutronException):
     message = ("Invalid port range %(port_range).")
