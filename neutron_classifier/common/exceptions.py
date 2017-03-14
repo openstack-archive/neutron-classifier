@@ -37,3 +37,35 @@ class InvalidICMPParameter(nexceptions.NeutronException):
 
 class InvalidPortRange(nexceptions.NeutronException):
     message = ("Invalid port range %(port_range).")
+
+
+class InvalidClassificationUuid(nexceptions.NeutronException):
+    message = ("No classification matches ID %(uuid).")
+
+
+class InvalidClassificationName(nexceptions.NeutronException):
+    message = ("No classification matches name %(name).")
+
+
+class InvalidParameterToType(nexceptions.NeutronException):
+    message = ("%(parameter) is not valid for classification type %(type)")
+
+
+class InvalidValueToParameter(nexceptions.NeutronException):
+    message = ("%(value) is not a valid value for the %(parameter) field")
+
+
+class InvalidClassificationResource(nexceptions.NeutronException):
+    message = ("%(res) is not a valid classification resource")
+
+
+class InvalidClassificationAction(nexceptions.NeutronException):
+    message = ("%(act) is not a valid classification action")
+
+
+class InvalidClassificationMark(nexceptions.NeutronException):
+    msg = ("%(mark) is not a valid %(classification) classification")
+
+
+class InvalidClassificationMask(nexceptions.NeutronException):
+    msg = ("%(mask) is not a valid %(classification) mask")

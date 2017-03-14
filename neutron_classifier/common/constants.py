@@ -42,3 +42,35 @@ IP_VERSION_6 = 6
 
 SECURITYGROUP_ETHERTYPE_IPV4 = 'IPv4'
 SECURITYGROUP_ETHERTYPE_IPV6 = 'IPv6'
+
+DSCP_VALID_MARKS = [0, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32,
+                    34, 36, 38, 40, 46, 48, 56]
+ECN_VALID_MARKS = [0, 1, 2, 3]
+
+IP_V4 = ['dscp', 'dscp-mask', 'ecn', 'ecn-mask', 'protocol', 'protocol-mask',
+         'source-ipv4-address', 'source-ipv4-address-range',
+         'destination-ipv4-address', 'destination-ipv4-address-range']
+
+IP_V6 = ['traffic-class', 'traffic-class-mask', 'flow-label',
+         'flow-label-mask', 'next-header', 'next-header-mask',
+         'source-ipv6-address', 'source-ipv6-address-range',
+         'destination-ipv6-address', 'destination-ipv6-address-range']
+
+ETHERNET = ['destination-mac', 'destination-mac-range', 'source-mac',
+            'source-mac-range', 'ethernet-type']
+
+TRANSPORT = ['source-port', 'destination-port', 'source-min-port',
+             'source-max-port', 'destination-min-port',
+             'destination-max-port']
+
+NEUTRON_PORT = ['source-port', 'destination-port', 'source-subnet',
+                'destination-subnet' 'source-network', 'destination-network']
+
+ALL_FIELDS = IP_V4 + IP_V6 + ETHERNET + NEUTRON_PORT
+
+CLASSIFIER_FIELDS = {'ipv4_classification': IP_V4,
+                     'ipv6_classification': IP_V6,
+                     'tcp_classification': TRANSPORT,
+                     'udp_classification': TRANSPORT,
+                     'ethernet_classification': ETHERNET,
+                     'neutron_classification': NEUTRON_PORT}
