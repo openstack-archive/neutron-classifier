@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-
+# Copyright 2017 OpenStack Foundation
+#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -12,17 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""
-test_neutron-classifier
-----------------------------------
-
-Tests for `neutron-classifier` module.
-"""
-
 from neutron_classifier.tests import base
 
 
-class TestNeutron_classifier(base.TestCase):
+class TestUnitCase(base.TestCase):
+    """Test case base class for all unit tests."""
 
-    def test_something(self):
+    def test_base(self):
         pass
