@@ -1,7 +1,7 @@
 [run]
 branch = True
-source = neutron-classifier
-omit = neutron-classifier/openstack/*
+source = neutron_classifier
+omit = neutron_classifier/tests/*
 
 [report]
 ignore_errors = True
