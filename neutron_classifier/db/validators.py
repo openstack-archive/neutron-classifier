@@ -51,8 +51,7 @@ def _validate_sg_ethertype_and_protocol(rule, protocol):
 def validate_port_range(min_port, max_port):
     """Check that port_range is valid."""
     port_range = '%s:%s' % (min_port, max_port)
-    if(min_port is None and
-        max_port is None):
+    if(min_port is None and max_port is None):
         return
     if (int(min_port) <= 0 or int(max_port) <= 0):
         raise exc.InvalidPortRange(port_range=port_range)
