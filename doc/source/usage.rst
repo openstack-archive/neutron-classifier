@@ -1,6 +1,6 @@
-========
+=====
 Usage
-========
+=====
 
 To use neutron-classifier in a project::
 

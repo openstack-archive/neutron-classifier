@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Copyright 2017 OpenStack Foundation
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,5 +15,4 @@
 import pbr.version
 
 
-__version__ = pbr.version.VersionInfo(
-    'neutron-classifier').version_string()
+__version__ = pbr.version.VersionInfo('neutron_classifier').version_string()

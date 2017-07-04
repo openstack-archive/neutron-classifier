@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright 2010-2011 OpenStack Foundation
 # Copyright (c) 2013 Hewlett-Packard Development Company, L.P.
 #
@@ -19,5 +17,4 @@ from oslotest import base
 
 
 class TestCase(base.BaseTestCase):
-
-    """Test case base class for all unit tests."""
+    """Test case base class for all tests."""
