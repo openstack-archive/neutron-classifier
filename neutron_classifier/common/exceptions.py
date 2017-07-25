@@ -19,21 +19,29 @@ neutron-classifier exception handling.
 from neutron_lib import exceptions as nexceptions
 
 
-class InvalidEthernetClassifier(nexceptions.NeutronException):
-    message = ('Invalid ethernet classifier value for %(eth_type)s.')
+class ConsumedClassification(nexceptions.NeutronException):
+    message = ("""One or more classification is already being consumed
+               and can't be used or deleted.""")
 
 
-class EthertypeConflictWithProtocol(nexceptions.NeutronException):
-    message = ("Invalid ethertype %(ethertype)s for protocol %(protocol)s.")
+class InvalidClassificationGroupId(nexceptions.NeutronException):
+    message = ("One or more id is not a valid classification group id.")
 
 
-class IpAddressConflict(nexceptions.NeutronException):
-    message = ("IP address do not agree with the given IP Version.")
+class InvalidClassificationId(nexceptions.NeutronException):
+    message = ("One or more id is not a valid classification id")
 
 
-class InvalidICMPParameter(nexceptions.NeutronException):
-    message = ("%(param)s are not allowed when protocol is set to ICMP.")
+class ConsumedClassificationGroup(nexceptions.NeutronException):
+    message = ("""One or more classification group is being consumed
+               and can't be deleted.""")
 
 
-class InvalidPortRange(nexceptions.NeutronException):
-    message = ("Invalid port range %(port_range).")
+class InvalidUpdateRequest(nexceptions.NeutronException):
+    message = ("""The update request is invalid. Only the name and description
+               can be updated.""")
+
+
+class InvalidClassificationDefintion(nexceptions.NeutronException):
+    message = ("""The classification definition(fields) is incorrect.
+               Please check the valid fields for the classification.""")

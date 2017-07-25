@@ -12,10 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_utils import uuidutils
 import oslo_versionedobjects
 
 from neutron_classifier.objects import classifications
+from neutron_classifier.tests import objects_base as obj_base
 from neutron_classifier.tests import tools
 
 from neutron_lib import context
@@ -25,64 +25,9 @@ from neutron.tests.unit.objects import test_base
 from neutron.tests.unit import testlib_api
 
 
-class _CCFObjectsTestCommon(object):
-
-    # TODO(ndahiwade): this represents classifications containing Enum fields,
-    # will need to be reworked if more classifications are added here later.
-    _Enum_classifications = [classifications.IPV4Classification,
-                             classifications.IPV6Classification]
-    _Enumfield = oslo_versionedobjects.fields.EnumField
-    ctx = context.get_admin_context()
-
-    def get_random_attrs(self, obj=None):
-        obj = obj
-        attrs = {}
-        for field, field_obj in obj.fields.items():
-            if field != 'c_type' and type(field_obj) != self._Enumfield:
-                random_generator = test_base.FIELD_TYPE_VALUE_GENERATOR_MAP[
-                    type(field_obj)]
-                attrs[field] = random_generator()
-        return attrs
-
-    def _create_test_cg(self, name):
-        attrs = {'name': name,
-                 'id': uuidutils.generate_uuid(),
-                 'description': "Description of test group",
-                 'project_id': uuidutils.generate_uuid(),
-                 'operator': 'AND'}
-        cg = classifications.ClassificationGroup(self.ctx, **attrs)
-        cg.create()
-        return cg
-
-    def _create_test_classification(self, c_type, classification):
-        attrs = self.get_random_attrs(classification)
-        if classification in self._Enum_classifications:
-            attrs['ecn'] = tools.get_random_ecn()
-        attrs['c_type'] = c_type
-        c = classification(self.ctx, **attrs)
-        c.create()
-        return c
-
-    def _create_test_cg_cg_mapping(self, cg1, cg2):
-        attrs = {'container_cg_id': cg1,
-                 'stored_cg_id': cg2}
-        cg_m_cg = classifications.CGToClassificationGroupMapping(self.ctx,
-                                                                 **attrs)
-        cg_m_cg.create()
-        return cg_m_cg
-
-    def _create_test_cg_c_mapping(self, cg, c):
-        attrs = {'container_cg_id': cg,
-                 'stored_classification_id': c}
-        cg_m_c = classifications.CGToClassificationMapping(self.ctx,
-                                                           **attrs)
-        cg_m_c.create()
-        return cg_m_c
-
-
 class ClassificationGroupTest(test_base.BaseDbObjectTestCase,
                               testlib_api.SqlTestCase,
-                              _CCFObjectsTestCommon):
+                              obj_base._CCFObjectsTestCommon):
     # NOTE(ndahiwade): As the FIELD_TYPE_VALUE_GENERATOR_MAP in neutron's
     # test_base for objects doesn't have an entry for operator Enum fields,
     # we are adding it here for our use rather than adding in neutron.
@@ -108,7 +53,7 @@ class ClassificationGroupTest(test_base.BaseDbObjectTestCase,
 # mapping class inheritence (polymorphic_identity), and as this is unique to
 # CCF we have decided not to use it for tests for individual classifications.
 class UDPClassificationTest(testlib_api.SqlTestCase,
-                            _CCFObjectsTestCommon):
+                            obj_base._CCFObjectsTestCommon):
 
     test_class = classifications.UDPClassification
 
@@ -126,7 +71,7 @@ class UDPClassificationTest(testlib_api.SqlTestCase,
 
 
 class IPV4ClassificationTest(testlib_api.SqlTestCase,
-                             _CCFObjectsTestCommon):
+                             obj_base._CCFObjectsTestCommon):
 
     test_class = classifications.IPV4Classification
 
@@ -144,7 +89,7 @@ class IPV4ClassificationTest(testlib_api.SqlTestCase,
 
 
 class IPV6ClassificationTest(testlib_api.SqlTestCase,
-                             _CCFObjectsTestCommon):
+                             obj_base._CCFObjectsTestCommon):
 
     test_class = classifications.IPV6Classification
 
@@ -162,7 +107,7 @@ class IPV6ClassificationTest(testlib_api.SqlTestCase,
 
 
 class TCPClassificationTest(testlib_api.SqlTestCase,
-                            _CCFObjectsTestCommon):
+                            obj_base._CCFObjectsTestCommon):
 
     test_class = classifications.TCPClassification
 
@@ -180,7 +125,7 @@ class TCPClassificationTest(testlib_api.SqlTestCase,
 
 
 class EthernetClassificationTest(testlib_api.SqlTestCase,
-                                 _CCFObjectsTestCommon):
+                                 obj_base._CCFObjectsTestCommon):
 
     test_class = classifications.EthernetClassification
 
@@ -201,7 +146,7 @@ class EthernetClassificationTest(testlib_api.SqlTestCase,
 
 
 class CGToClassificationGroupMappingTest(testlib_api.SqlTestCase,
-                                         _CCFObjectsTestCommon):
+                                         obj_base._CCFObjectsTestCommon):
 
     def test_get_object(self):
         with db_api.context_manager.writer.using(self.ctx):
@@ -235,7 +180,7 @@ class CGToClassificationGroupMappingTest(testlib_api.SqlTestCase,
 
 
 class CGToClassificationMappingTest(testlib_api.SqlTestCase,
-                                    _CCFObjectsTestCommon):
+                                    obj_base._CCFObjectsTestCommon):
 
     ctx = context.get_admin_context()
 
