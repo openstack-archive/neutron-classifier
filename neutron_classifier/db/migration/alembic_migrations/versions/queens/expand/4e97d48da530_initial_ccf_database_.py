@@ -42,6 +42,26 @@ def upgrade():
                   nullable=False))
 
     op.create_table(
+        'classificationgrouprbacs',
+        sa.Column('id', sa.String(length=36), primary_key=True,
+                  nullable=False),
+        sa.Column('project_id', sa.String(length=255)),
+        sa.Column('target_tenant', sa.String(length=255),
+                  nullable=False),
+        sa.Column('action', sa.String(length=255), nullable=False),
+        sa.Column('object_id', sa.String(length=36),
+                  nullable=False),
+        sa.ForeignKeyConstraint(['object_id'],
+                                ['classification_groups.id'],
+                                ondelete='CASCADE'),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('target_tenant',
+                            'object_id', 'action'))
+    op.create_index(op.f('ix_classificationgrouprbacs_project_id'),
+                    'classificationgrouprbacs',
+                    ['project_id'], unique=False)
+
+    op.create_table(
         'classifications',
         sa.Column('id', sa.String(length=36), primary_key=True),
         sa.Column('c_type', sa.String(length=36)),
