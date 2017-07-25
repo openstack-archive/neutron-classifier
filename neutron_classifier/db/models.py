@@ -1,18 +1,19 @@
-# Copyright (c) 2015 Mirantis, Inc.
+# Copyright 2017 Intel Corporation.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 from neutron_classifier.common import constants
+from neutron_lib.db import model_base
+
 from oslo_utils import uuidutils
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
@@ -169,4 +170,258 @@ class VlanClassifier(Classifier):
     __mapper_args__ = {'polymorphic_identity': 'vlanclassifier'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifiers.id'),
                    primary_key=True)
-    vlan_priority = sa.Column(sa.Integer)
+vlan_priority = sa.Column(sa.Integer)
+
+
+# Service plugin models
+class ClassificationGroup(model_base.BASEV2, model_base.HasId,
+                          model_base.HasProject):
+    __tablename__ = 'classification_groups'
+    name = sa.Column(sa.String(36))
+    description = sa.Column(sa.String(255))
+    cg_id = sa.Column(sa.String(36))
+    shared = sa.Column(sa.Boolean())
+    operator = sa.Column(sa.String(4))
+
+
+class ClassificationGroupMapping(model_base.BASEV2, model_base.HasId,
+                                 model_base.HasProject):
+    __tablename__ = 'classification_groups_mapping'
+    cg_id = sa.Column(sa.String(36), sa.ForeignKey('classification_groups.id'))
+    classification_id = sa.Column(sa.String(36))
+
+
+class ClassificationBase(Base, HasId, model_base.HasProject,
+                         model_base.BASEV2):
+    __tablename__ = 'classifications'
+    c_type = sa.Column(sa.String(36))
+    __mapper_args__ = {'polymorphic_on': c_type}
+    name = sa.Column(sa.String(36))
+    description = sa.Column(sa.String(255))
+    shared = sa.Column(sa.Boolean())
+    negated = sa.Column(sa.Boolean())
+
+
+class IPV4Classification(ClassificationBase):
+    __tablename__ = 'ipv4_classifications'
+    __mapper_args__ = {'polymorphic_identity': 'ipv4classification'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
+                   primary_key=True)
+    ihl = sa.Column(sa.Integer())
+    diffserv = sa.Column(sa.Integer())
+    diffserv_mask = sa.Column(sa.Integer())
+    length = sa.Column(sa.Integer())
+    flags = sa.Column(sa.Integer())
+    flags_mask = sa.Column(sa.Integer())
+    ttl = sa.Column(sa.Integer())
+    protocol = sa.Column(sa.Integer())
+    src_addr = sa.Column(sa.String(36))
+    dst_addr = sa.Column(sa.String(36))
+    options = sa.Column(sa.Integer())
+    options_mask = sa.Column(sa.Integer())
+
+
+class IPV6Classification(ClassificationBase):
+    __tablename__ = 'ipv6_classifications'
+    __mapper_args__ = {'polymorphic_identity': 'ipv6classification'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
+                   primary_key=True)
+    traffic_class = sa.Column(sa.Integer())
+    traffic_class_mask = sa.Column(sa.Integer())
+    length = sa.Column(sa.Integer())
+    next_header = sa.Column(sa.Integer())
+    hops = sa.Column(sa.Integer())
+    src_addr = sa.Column(sa.String(36))
+    dst_addr = sa.Column(sa.String(36))
+
+
+class EthernetClassification(ClassificationBase):
+    __tablename__ = 'ethernet_classifications'
+    __mapper_args__ = {'polymorphic_identity': 'ethernetclassification'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
+                   primary_key=True)
+    preamble = sa.Column(sa.Integer())
+    ethertype = sa.Column(sa.Integer())
+    src_addr = sa.Column(sa.String(36))
+    dst_addr = sa.Column(sa.String(36))
+
+
+class UDPClassification(ClassificationBase):
+    __tablename__ = 'udp_classifications'
+    __mapper_args__ = {'polymorphic_identity': 'udpclassification'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
+                   primary_key=True)
+    src_port = sa.Column(sa.String(36))
+    dst_port = sa.Column(sa.String(36))
+    length = sa.Column(sa.Integer())
+    window_size = sa.Column(sa.Integer())
+
+
+class TCPClassification(ClassificationBase):
+    __tablename__ = 'tcp_classifications'
+    __mapper_args__ = {'polymorphic_identity': 'tcpclassification'}
+    id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
+                   primary_key=True)
+    src_port = sa.Column(sa.String(36))
+    dst_port = sa.Column(sa.String(36))
+    flags = sa.Column(sa.Integer())
+    flags_mask = sa.Column(sa.Integer())
+    window = sa.Column(sa.Integer())
+    data_offset = sa.Column(sa.Integer())
+    option_kind = sa.Column(sa.Integer())
+
+
+def read_classification_base(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['c_type'] = model.c_type
+    resp['negated'] = model.negated
+
+    return resp
+
+
+def _generate_dict_from_ipv4_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['project_id'] = model.project_id
+    resp['negated'] = model.negated
+    resp['ihl'] = model.ihl
+    resp['diffserv'] = model.diffserv
+    resp['diffserv_mask'] = model.diffserv_mask
+    resp['options'] = model.options
+    resp['options_mask'] = model.options_mask
+    resp['flags'] = model.flags
+    resp['flags_mask'] = model.flags_mask
+    resp['protocol'] = model.protocol
+    resp['min_ttl'] = model.min_ttl
+    resp['max_ttl'] = model.max_ttl
+    resp['src_addr'] = model.src_addr
+    resp['dst_addr'] = model.dst_addr
+    return resp
+
+
+def _generate_dict_from_ipv6_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['project_id'] = model.project_id
+    resp['negated'] = model.negated
+    resp['traffic_class'] = model.traffic_class
+    resp['traffic_class_mask'] = model.traffic_class_mask
+    resp['next_header'] = model.next_header
+    resp['hops'] = model.hops
+    resp['length'] = model.length
+    resp['src_addr'] = model.src_addr
+    resp['dst_addr'] = model.dst_addr
+    return resp
+
+
+def _generate_dict_from_eth_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['project_id'] = model.project_id
+    resp['negated'] = model.negated
+    resp['ethertype'] = model.ethertype
+    resp['preamble'] = model.preamble
+    resp['src_addr'] = model.src_addr
+    resp['dst_addr'] = model.dst_addr
+    return resp
+
+
+def _generate_dict_from_udp_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['project_id'] = model.project_id
+    resp['negated'] = model.negated
+    resp['src_port'] = model.src_port
+    resp['dst_port'] = model.dst_port
+    resp['length'] = model.length
+    resp['window_size'] = model.window_size
+    return resp
+
+
+def _generate_dict_from_tcp_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['project_id'] = model.project_id
+    resp['negated'] = model.negated
+    resp['src_port'] = model.src_port
+    resp['dst_port'] = model.dst_port
+    resp['flags'] = model.flags
+    resp['flags_mask'] = model.flags_mask
+    resp['window'] = model.window
+    resp['data_offset'] = model.data_offset
+    resp['option_kind'] = model.option_kind
+    return resp
+
+
+def _read_classification_groups(svc_plu, context, model,
+                                mapping_model, id=None):
+    cg = svc_plu._get_collection(context, model, _generate_dict_from_cg_db)
+    cgm = svc_plu._get_collection(context, mapping_model,
+                                  _generate_dict_from_cgmapping_db)
+    ids = []
+    for c in cg:
+        if c['id'] == id:
+            cg = c
+        for m in cgm:
+            if c['id'] == m['cg_id']:
+                ids.append(m['classification_id'])
+                c['classification'] = ','.join(str(x) for x in ids)
+        del ids[:]
+
+    return cg
+
+
+def _generate_dict_from_cg_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['name'] = model.name
+    resp['description'] = model.description
+    resp['project_id'] = model.project_id
+    resp['classification'] = ''
+    resp['classification_group'] = model.cg_id
+    resp['shared'] = model.shared
+    resp['operator'] = model.operator
+
+    return resp
+
+
+def _generate_dict_from_cgmapping_db(model, fields=None):
+    resp = {}
+
+    resp['id'] = model.id
+    resp['cg_id'] = model.cg_id
+    resp['classification_id'] = model.classification_id
+
+    return resp
+
+RESOURCE_MODELS = {'ipv4_classification': IPV4Classification,
+                   'ipv6_classification': IPV6Classification,
+                   'tcp_classification': TCPClassification,
+                   'udp_classification': UDPClassification,
+                   'ethernet_classification': EthernetClassification}
+
+DICT_RESP = {'ipv4_classification': _generate_dict_from_ipv4_db,
+             'ipv6_classification': _generate_dict_from_ipv6_db,
+             'tcp_classification': _generate_dict_from_tcp_db,
+             'udp_classification': _generate_dict_from_udp_db,
+             'ethernet_classification': _generate_dict_from_eth_db}
