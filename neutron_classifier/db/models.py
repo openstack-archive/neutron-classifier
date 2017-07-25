@@ -1,5 +1,4 @@
 # Copyright (c) 2015 Mirantis, Inc.
-# Copyright 2017 Intel Corporation.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -21,7 +20,6 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-# Service plugin models
 class ClassificationGroup(model_base.BASEV2, model_base.HasId,
                           model_base.HasProject):
     __tablename__ = 'classification_groups'
