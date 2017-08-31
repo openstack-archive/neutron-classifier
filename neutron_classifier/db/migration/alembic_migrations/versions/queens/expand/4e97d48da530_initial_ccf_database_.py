@@ -37,8 +37,9 @@ def upgrade():
         sa.Column('description', sa.String(length=255)),
         sa.Column('project_id', sa.String(length=255),
                   index=True),
-        sa.Column('shared', sa.Boolean(), nullable=False),
-        sa.Column('operator', sa.Enum("AND", "OR"), nullable=False))
+        sa.Column('shared', sa.Boolean()),
+        sa.Column('operator', sa.Enum("AND", "OR", name="operator_types"),
+                  nullable=False))
 
     op.create_table(
         'classifications',
@@ -46,32 +47,35 @@ def upgrade():
         sa.Column('c_type', sa.String(length=36)),
         sa.Column('name', sa.String(length=255)),
         sa.Column('description', sa.String(length=255)),
-        sa.Column('negated', sa.Boolean(), nullable=True),
-        sa.Column('shared', sa.Boolean(), nullable=True),
+        sa.Column('negated', sa.Boolean()),
+        sa.Column('shared', sa.Boolean()),
         sa.Column('project_id', sa.String(length=255),
                   index=True))
 
     op.create_table(
         'classification_group_to_classification_mappings',
         sa.Column('container_cg_id', sa.String(length=36), sa.ForeignKey(
-                  "classification_groups.id"), primary_key=True),
+                  "classification_groups.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('stored_classification_id', sa.String(length=36),
                   sa.ForeignKey("classifications.id"), primary_key=True))
 
     op.create_table(
         'classification_group_to_cg_mappings',
         sa.Column('container_cg_id', sa.String(length=36), sa.ForeignKey(
-                  "classification_groups.id"), primary_key=True),
+                  "classification_groups.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('stored_cg_id', sa.String(length=36), sa.ForeignKey(
                   "classification_groups.id"), primary_key=True))
 
     op.create_table(
         'ipv4_classifications',
         sa.Column('id', sa.String(length=36), sa.ForeignKey(
-                  "classifications.id"), primary_key=True),
+                  "classifications.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('dscp', sa.Integer()),
         sa.Column('dscp_mask', sa.Integer()),
-        sa.Column('ecn', sa.Enum("0", "1", "2", "3")),
+        sa.Column('ecn', sa.Enum("0", "1", "2", "3", name="ecn_types")),
         sa.Column('length_min', sa.Integer()),
         sa.Column('length_max', sa.Integer()),
         sa.Column('flags', sa.Integer()),
@@ -85,10 +89,11 @@ def upgrade():
     op.create_table(
         'ipv6_classifications',
         sa.Column('id', sa.String(length=36), sa.ForeignKey(
-                  "classifications.id"), primary_key=True),
+                  "classifications.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('dscp', sa.Integer()),
         sa.Column('dscp_mask', sa.Integer()),
-        sa.Column('ecn', sa.Enum("0", "1", "2", "3")),
+        sa.Column('ecn', sa.Enum("0", "1", "2", "3", name="ecn_types")),
         sa.Column('length_min', sa.Integer()),
         sa.Column('length_max', sa.Integer()),
         sa.Column('next_header', sa.Integer()),
@@ -100,7 +105,8 @@ def upgrade():
     op.create_table(
         'ethernet_classifications',
         sa.Column('id', sa.String(length=36), sa.ForeignKey(
-                  "classifications.id"), primary_key=True),
+                  "classifications.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('ethertype', sa.Integer()),
         sa.Column('src_addr', sa.String(length=17)),
         sa.Column('dst_addr', sa.String(length=17)))
@@ -108,7 +114,8 @@ def upgrade():
     op.create_table(
         'udp_classifications',
         sa.Column('id', sa.String(length=36), sa.ForeignKey(
-                  "classifications.id"), primary_key=True),
+                  "classifications.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('src_port_min', sa.Integer()),
         sa.Column('src_port_max', sa.Integer()),
         sa.Column('dst_port_min', sa.Integer()),
@@ -119,7 +126,8 @@ def upgrade():
     op.create_table(
         'tcp_classifications',
         sa.Column('id', sa.String(length=36), sa.ForeignKey(
-                  "classifications.id"), primary_key=True),
+                  "classifications.id", ondelete="CASCADE"),
+                  primary_key=True),
         sa.Column('src_port_min', sa.Integer()),
         sa.Column('src_port_max', sa.Integer()),
         sa.Column('dst_port_min', sa.Integer()),
