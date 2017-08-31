@@ -38,7 +38,7 @@ def upgrade():
         sa.Column('project_id', sa.String(length=255),
                   index=True),
         sa.Column('shared', sa.Boolean(), nullable=False),
-        sa.Column('operator', sa.Enum("AND", "OR"), nullable=False))
+        sa.Column('operator', sa.Enum("AND", "OR", name="operator_types"), nullable=False))
 
     op.create_table(
         'classifications',
@@ -71,7 +71,7 @@ def upgrade():
                   "classifications.id"), primary_key=True),
         sa.Column('dscp', sa.Integer()),
         sa.Column('dscp_mask', sa.Integer()),
-        sa.Column('ecn', sa.Enum("0", "1", "2", "3")),
+        sa.Column('ecn', sa.Enum("0", "1", "2", "3", name="ecn_types")),
         sa.Column('length_min', sa.Integer()),
         sa.Column('length_max', sa.Integer()),
         sa.Column('flags', sa.Integer()),
@@ -88,7 +88,7 @@ def upgrade():
                   "classifications.id"), primary_key=True),
         sa.Column('dscp', sa.Integer()),
         sa.Column('dscp_mask', sa.Integer()),
-        sa.Column('ecn', sa.Enum("0", "1", "2", "3")),
+        sa.Column('ecn', sa.Enum("0", "1", "2", "3", name="ecn_types")),
         sa.Column('length_min', sa.Integer()),
         sa.Column('length_max', sa.Integer()),
         sa.Column('next_header', sa.Integer()),
