@@ -15,3 +15,13 @@
         - openstack-tox-functional-py35:
             required-projects:
               - openstack/neutron
+
+- job:
+    name: openstack-tox-functional
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/neutron-classifier-functional-dsvm/run.yaml
+    post-run: playbooks/legacy/neutron-classifier-functional-dsvm/post.yaml
+    timeout: 7800
+    required-projects:
+      - openstack-infra/devstack-gate
+      - openstack/neutron-classifier
