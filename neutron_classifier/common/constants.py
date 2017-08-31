@@ -14,31 +14,23 @@
 # under the License.
 
 
-CLASSIFIER_TYPES = ['ip_classifier', 'ipv4_classifier', 'ipv6_classifier',
-                    'transport_classifier', 'ethernet_classifier',
-                    'encapsulation_classifier', 'neutron_port_classifier']
+FIELD_IP_V4 = ['dscp', 'dscp_mask', 'ecn', 'length_min', 'length_max',
+               'flags', 'flags_mask', 'ttl_min', 'ttl_max', 'protocol',
+               'src_addr', 'dst_addr']
 
-# Protocol names and numbers
-PROTO_NAME_ICMP = 'icmp'
-PROTO_NAME_ICMP_V6 = 'icmpv6'
-PROTO_NAME_TCP = 'tcp'
-PROTO_NAME_UDP = 'udp'
+FIELD_IP_V6 = ['dscp', 'dscp_mask', 'ecn', 'length_min', 'length_max',
+               'next_header', 'hops_min', 'hops_max', 'src_addr', 'dst_addr']
 
-# TODO(sc68cal) add more protocols`
-PROTOCOLS = [PROTO_NAME_ICMP, PROTO_NAME_ICMP_V6,
-             PROTO_NAME_TCP, PROTO_NAME_UDP]
+FIELD_ETHERNET = ['ethertype', 'src_addr', 'dst_addr']
 
-ENCAPSULATION_TYPES = ['vxlan', 'gre']
+FIELD_TCP = ['src_port_min', 'src_port_max', 'dst_port_min', 'dst_port_max',
+             'flags', 'flags_mask', 'window_min', 'window_max']
 
-NEUTRON_SERVICES = ['neutron-fwaas', 'networking-sfc', 'security-group']
+FIELD_UDP = ['src_port_min', 'src_port_max', 'dst_port_min', 'dst_port_max',
+             'length_min', 'length_max']
 
-DIRECTIONS = ['INGRESS', 'EGRESS', 'BIDIRECTIONAL']
-
-ETHERTYPE_IPV4 = 0x0800
-ETHERTYPE_IPV6 = 0x86DD
-
-IP_VERSION_4 = 4
-IP_VERSION_6 = 6
-
-SECURITYGROUP_ETHERTYPE_IPV4 = 'IPv4'
-SECURITYGROUP_ETHERTYPE_IPV6 = 'IPv6'
+SUPPORTED_FIELDS = {'ipv4': FIELD_IP_V4,
+                    'ipv6': FIELD_IP_V6,
+                    'tcp': FIELD_TCP,
+                    'udp': FIELD_UDP,
+                    'ethernet': FIELD_ETHERNET}
