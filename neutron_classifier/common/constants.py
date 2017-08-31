@@ -42,3 +42,31 @@ IP_VERSION_6 = 6
 
 SECURITYGROUP_ETHERTYPE_IPV4 = 'IPv4'
 SECURITYGROUP_ETHERTYPE_IPV6 = 'IPv6'
+
+L2_PREFIX = '/ccf'
+
+DSCP_VALID_MARKS = [0, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32,
+                    34, 36, 38, 40, 46, 48, 56]
+ECN_VALID_MARKS = [0, 1, 2, 3]
+
+IP_V4 = ['ihl', 'diffserv', 'diffserv_mask', 'length', 'flags',
+         'flags_mask', 'ttl', 'protocol', 'src_addr', 'dst_addr',
+         'options', 'options_mask']
+
+IP_V6 = ['traffic_class', 'traffic_class_mask', 'length',
+         'next_header', 'hops', 'src_addr', 'dst_addr']
+
+ETHERNET = ['preamble', 'src_addr', 'dst_addr', 'ethertype']
+
+TCP = ['src_port', 'dst-port', 'flags', 'flags_mask', 'window', 'data_offset',
+       'option_kind']
+
+UDP = ['src_port', 'dst_port', 'length', 'window_size']
+
+ALL_FIELDS = IP_V4 + IP_V6 + ETHERNET
+
+CLASSIFIER_FIELDS = {'ipv4': IP_V4,
+                     'ipv6': IP_V6,
+                     'tcp': TCP,
+                     'udp': UDP,
+                     'ethernet': ETHERNET}
