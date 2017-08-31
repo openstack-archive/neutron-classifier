@@ -14,31 +14,17 @@
 # under the License.
 
 
-CLASSIFIER_TYPES = ['ip_classifier', 'ipv4_classifier', 'ipv6_classifier',
-                    'transport_classifier', 'ethernet_classifier',
-                    'encapsulation_classifier', 'neutron_port_classifier']
+from neutron_classifier.objects import classifications as cs
 
-# Protocol names and numbers
-PROTO_NAME_ICMP = 'icmp'
-PROTO_NAME_ICMP_V6 = 'icmpv6'
-PROTO_NAME_TCP = 'tcp'
-PROTO_NAME_UDP = 'udp'
+FIELDS_IP_V4 = cs.IPV4Classification.fields.keys()
+FIELDS_IP_V6 = cs.IPV6Classification.fields.keys()
+FIELDS_TCP = cs.TCPClassification.fields.keys()
+FIELDS_UDP = cs.UDPClassification.fields.keys()
+FIELDS_ETHERNET = cs.EthernetClassification.fields.keys()
 
-# TODO(sc68cal) add more protocols`
-PROTOCOLS = [PROTO_NAME_ICMP, PROTO_NAME_ICMP_V6,
-             PROTO_NAME_TCP, PROTO_NAME_UDP]
 
-ENCAPSULATION_TYPES = ['vxlan', 'gre']
-
-NEUTRON_SERVICES = ['neutron-fwaas', 'networking-sfc', 'security-group']
-
-DIRECTIONS = ['INGRESS', 'EGRESS', 'BIDIRECTIONAL']
-
-ETHERTYPE_IPV4 = 0x0800
-ETHERTYPE_IPV6 = 0x86DD
-
-IP_VERSION_4 = 4
-IP_VERSION_6 = 6
-
-SECURITYGROUP_ETHERTYPE_IPV4 = 'IPv4'
-SECURITYGROUP_ETHERTYPE_IPV6 = 'IPv6'
+SUPPORTED_FIELDS = {'ipv4': FIELDS_IP_V4,
+                    'ipv6': FIELDS_IP_V6,
+                    'tcp': FIELDS_TCP,
+                    'udp': FIELDS_UDP,
+                    'ethernet': FIELDS_ETHERNET}
