@@ -9,7 +9,7 @@ NEUTRON_PATH=$GATE_DEST/neutron
 NETWORKING_CCF_PATH=$GATE_DEST/neutron-classifier
 GATE_HOOKS=$NETWORKING_CCF_PATH/neutron_classifier/tests/contrib/hooks
 DEVSTACK_PATH=$GATE_DEST/devstack
-LOCAL_CONF=$DEVSTACK_PATH/late-local.conf
+LOCAL_CONF=$DEVSTACK_PATH/local.conf
 DSCONF=/tmp/devstack-tools/bin/dsconf
 
 # Install devstack-tools used to produce local.conf; we can't rely on
