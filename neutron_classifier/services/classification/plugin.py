@@ -64,6 +64,7 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
 
     def update_classification(self, context, classification_id,
                               fields_to_update):
+        fields_to_update = fields_to_update['classification']
         field_keys = list(fields_to_update.keys())
         valid_keys = ['name', 'description']
         for key in field_keys:
@@ -75,7 +76,9 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
         with db_api.context_manager.writer.using(context):
             classification = cl_class.update_object(
                 context, fields_to_update, id=classification_id)
-        return classification
+        db_dict = self.merge_header(classification)
+        db_dict['id'] = classification['id']
+        return db_dict
 
     def get_classification(self, context, classification_id, fields=None):
         cl = class_group.ClassificationBase.get_object(context,
@@ -89,20 +92,12 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
     def get_classifications(self, context, filters=None, fields=None,
                             sorts=None, limit=None, marker=None,
                             page_reverse=False):
-        # NOTE(ndahiwad): If the filters are not passed by the end-user
-        # then will fetch all the classifications. Otherwise, only the
-        # classification_types that the user wants will be returned.
-        if not filters['c_type']:
-            filters['c_type'] = ['tcp', 'udp', 'ipv4', 'ipv6', 'ethernet']
-        c_dict = {'classifications': []}
-        for c_type in filters['c_type']:
-            pager = base_obj.Pager(sorts, limit, page_reverse, marker)
-            cl = class_group.CLASS_MAP[c_type].get_objects(context,
-                                                           _pager=pager)
-            db_dict = self.merge_headers(cl)
-            c_dict['classifications'].append(db_dict)
-
-        return c_dict
+        c_type = filters['c_type'][0]
+        pager = base_obj.Pager(sorts, limit, page_reverse, marker)
+        cl = class_group.CLASS_MAP[c_type].get_objects(context,
+                                                       _pager=pager)
+        db_dict = self.merge_headers(cl)
+        return db_dict
 
     def get_classification_type(self, context, filters=None, fields=None,
                                 sorts=None, limit=None, marker=None,
@@ -140,13 +135,14 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
         return cl_dict
 
     def merge_headers(self, classifications):
-        c_type = classifications[0]['c_type']
-        ret_list = {CLASSIFICATION_MAP[c_type]: []}
+        if not classifications:
+            return []
+        ret_list = []
 
         for clas in classifications:
             db_dict = self.merge_header(clas)
             db_dict['id'] = clas.get('id', None)
-            ret_list[CLASSIFICATION_MAP[c_type]].append(db_dict)
+            ret_list.append(db_dict)
         return ret_list
 
     def merge_header(self, classification):
