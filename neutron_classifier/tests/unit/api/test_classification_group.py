@@ -67,8 +67,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
                 'project_id': uuidutils.generate_uuid(),
                 'operator': 'AND',
                 'shared': False,
-                'classifications': [self.c_id1, self.c_id2],
-                'classification_groups': [self.cg_id]}
+                'classification': [self.c_id1, self.c_id2],
+                'classification_group': [self.cg_id]}
         }
         return self.test_cg
 
@@ -96,8 +96,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
 
         self.assertEqual(val, expected_val)
 
-        c_len = len(val['classifications'])
-        cg_len = len(val['classification_groups'])
+        c_len = len(val['classification'])
+        cg_len = len(val['classification_group'])
         mock_call_len = len(mock_manager.mock_calls)
         self.assertEqual(mock_call_len, c_len + cg_len + 1)
 
@@ -226,13 +226,16 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
 
         cg = classifications.ClassificationGroup(self.ctxt, **test_cg)
 
-        updated_fields = {'name': 'Test Group Updated',
-                          'description': 'Updated Description'}
+        updated_fields = {'classification_group':
+                          {'name': 'Test Group Updated',
+                           'description': 'Updated Description'}}
 
         self.cg_plugin.update_classification_group(self.ctxt, cg.id,
                                                    updated_fields)
+        updated_fields_called = {'name': 'Test Group Updated',
+                                 'description': 'Updated Description'}
 
         mock_manager.cg_update.assert_called_once()
         mock_manager.cg_update.assert_called_once_with(self.ctxt,
-                                                       updated_fields,
+                                                       updated_fields_called,
                                                        id=cg.id)

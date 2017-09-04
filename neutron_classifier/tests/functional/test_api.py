@@ -93,14 +93,16 @@ class ClassificationGroupApiTest(testlib_api.MySQLTestCaseMixin,
             cg1 = self._create_test_cg('Test Group 0')
             cg2 = self._create_test_cg('Test Group 1')
             self.test_plugin.update_classification_group(
-                self.ctx, cg1.id, {'name': 'Test Group updated'})
+                self.ctx, cg1.id,
+                {'classification_group': {'name': 'Test Group updated'}})
             fetch_cg1 = classifications.ClassificationGroup.get_object(
                 self.ctx, id=cg1['id'])
             self.assertRaises(
                 exceptions.InvalidUpdateRequest,
                 self.test_plugin.update_classification_group,
-                self.ctx, cg2.id, {'name': 'Test Group updated',
-                                   'operator': 'OR'})
+                self.ctx, cg2.id,
+                {'classification_group': {'name': 'Test Group updated',
+                                          'operator': 'OR'}})
             self.assertEqual(fetch_cg1.name, 'Test Group updated')
 
     def test_delete_classification_group(self):
@@ -180,8 +182,8 @@ class ClassificationApiTest(testlib_api.MySQLTestCaseMixin,
             'ethernet', classifications.EthernetClassification)
         updated_name = 'Test Updated Classification'
         with db_api.context_manager.writer.using(self.ctx):
-            self.test_clas_plugin.update_classification(self.ctx, c1.id,
-                                                        {'name': updated_name})
+            self.test_clas_plugin.update_classification(
+                self.ctx, c1.id, {'classification': {'name': updated_name}})
             fetch_c1 = classifications.EthernetClassification.get_object(
                 self.ctx, id=c1.id)
         self.assertEqual(fetch_c1.name, updated_name)
