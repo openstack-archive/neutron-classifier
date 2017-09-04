@@ -180,8 +180,8 @@ class ClassificationApiTest(testlib_api.MySQLTestCaseMixin,
             'ethernet', classifications.EthernetClassification)
         updated_name = 'Test Updated Classification'
         with db_api.context_manager.writer.using(self.ctx):
-            self.test_clas_plugin.update_classification(self.ctx, c1.id,
-                                                        {'name': updated_name})
+            self.test_clas_plugin.update_classification(
+                self.ctx, c1.id, {'classification': {'name': updated_name}})
             fetch_c1 = classifications.EthernetClassification.get_object(
                 self.ctx, id=c1.id)
         self.assertEqual(fetch_c1.name, updated_name)

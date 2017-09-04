@@ -64,6 +64,7 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
 
     def update_classification(self, context, classification_id,
                               fields_to_update):
+        fields_to_update = fields_to_update['classification']
         field_keys = list(fields_to_update.keys())
         valid_keys = ['name', 'description']
         for key in field_keys:
@@ -75,7 +76,9 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
         with db_api.context_manager.writer.using(context):
             classification = cl_class.update_object(
                 context, fields_to_update, id=classification_id)
-        return classification
+        db_dict = self.merge_header(classification)
+        db_dict['id'] = classification['id']
+        return db_dict
 
     def get_classification(self, context, classification_id, fields=None):
         cl = class_group.ClassificationBase.get_object(context,
@@ -140,6 +143,8 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
         return cl_dict
 
     def merge_headers(self, classifications):
+        if not classifications:
+            return {}
         c_type = classifications[0]['c_type']
         ret_list = {CLASSIFICATION_MAP[c_type]: []}
 
