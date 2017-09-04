@@ -67,8 +67,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
                 'project_id': uuidutils.generate_uuid(),
                 'operator': 'AND',
                 'shared': False,
-                'classifications': [self.c_id1, self.c_id2],
-                'classification_groups': [self.cg_id]}
+                'classification': [self.c_id1, self.c_id2],
+                'classification_group': [self.cg_id]}
         }
         return self.test_cg
 
@@ -96,8 +96,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
 
         self.assertEqual(val, expected_val)
 
-        c_len = len(val['classifications'])
-        cg_len = len(val['classification_groups'])
+        c_len = len(val['classification'])
+        cg_len = len(val['classification_group'])
         mock_call_len = len(mock_manager.mock_calls)
         self.assertEqual(mock_call_len, c_len + cg_len + 1)
 
@@ -134,32 +134,22 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
             mock_manager.mock_calls.index(mock_cg_get_call) <
             mock_manager.mock_calls.index(mock_cg_delete_call))
 
-    def _mock_mapped_classifications(self):
-        self.mock_c1 = mock.Mock(id=uuidutils.generate_uuid(),
-                                 name='Ethernet', c_type='ethernet',
-                                 **self.test_classification_attrs)
-        self.mock_c2 = mock.Mock(id=uuidutils.generate_uuid(), name='TCP',
-                                 c_type='tcp',
-                                 **self.test_classification_attrs)
-        return [self.mock_c1, self.mock_c2]
-
     @mock.patch('neutron_classifier.objects.classifications.'
                 '_get_mapped_classification_groups')
     @mock.patch('neutron_classifier.objects.classifications.'
                 '_get_mapped_classifications')
     @mock.patch.object(classifications.ClassificationGroup, 'get_object')
-    def test_get_classification_group(self, mock_cg_get,
+    @mock.patch('neutron_classifier.db.classification.'
+                'TrafficClassificationGroupPlugin._make_db_dicts')
+    def test_get_classification_group(self, mock_db_dicts, mock_cg_get,
                                       mock_mapped_classifications,
                                       mock_mapped_cgs):
         mock_manager = mock.Mock()
+        mock_manager.attach_mock(mock_db_dicts, 'make_db_dicts')
         mock_manager.attach_mock(mock_cg_get, 'get_cg')
         mock_manager.attach_mock(mock_mapped_classifications, 'get_mapped_cs')
         mock_manager.attach_mock(mock_mapped_cgs, 'get_mapped_cgs')
         mock_manager.reset_mock()
-
-        mock_manager.get_mapped_cs.side_effect =\
-            self._mock_mapped_classifications()
-        mock_manager.get_mapped_cgs.side_effect = ['cg2']
 
         test_cg = self._generate_test_classification_group('Test Group')
         test_cg['classification_group'].pop('classifications', None)
@@ -169,32 +159,33 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         with mock.patch('neutron_classifier.db.classification.'
                         'TrafficClassificationGroupPlugin._make_db_dict',
                         return_value=test_cg):
-            val1 = self.cg_plugin.get_classification_group(
-                self.ctxt, test_cg['classification_group']['id'])
+            with mock.patch('neutron_classifier.db.classification.'
+                            'TrafficClassificationGroupPlugin._make_c_dicts'):
+                val1 = self.cg_plugin.get_classification_group(
+                    self.ctxt, test_cg['classification_group']['id'])
 
         self.assertEqual(val1, test_cg)
         mock_manager.get_cg.assert_called_with(
             self.ctxt, id=test_cg['classification_group']['id']
         )
-        self.assertEqual(val1['classification_group']['classifications'],
-                         self.mock_c1)
 
-        val1['classification_group']['classifications'] =\
-            classifications._get_mapped_classifications(self.ctxt,
-                                                        test_cg)
-        self.assertEqual(val1['classification_group']['classifications'],
-                         self.mock_c2)
-        self.assertEqual(val1['classification_group']
-                         ['classification_groups'], 'cg2')
-        mapped_cs_call_count = mock_manager.get_mapped_cs.call_count
-        self.assertEqual(2, mapped_cs_call_count)
+        mock_manager_call_count = len(mock_manager.mock_calls)
+        self.assertEqual(4, mock_manager_call_count)
+        mock_db_dicts.assert_called_once()
+        mock_cg_get.assert_called_once()
+        mock_mapped_classifications.assert_called_once()
+        mock_mapped_cgs.assert_called_once()
 
     @mock.patch.object(base_obj, 'Pager')
     @mock.patch.object(classifications.ClassificationGroup, 'get_objects')
-    def test_get_classification_groups(self, mock_cgs_get, mock_pager):
+    @mock.patch.object(cg_api.TrafficClassificationGroupPlugin,
+                       '_make_db_dicts')
+    def test_get_classification_groups(self, mock_db_dicts, mock_cgs_get,
+                                       mock_pager):
         mock_manager = mock.Mock()
         mock_manager.attach_mock(mock_cgs_get, 'get_cgs')
         mock_manager.attach_mock(mock_pager, 'pager')
+        mock_manager.attach_mock(mock_db_dicts, 'db_dicts')
         mock_manager.reset_mock()
 
         test_cg1 = self._generate_test_classification_group('Test Group1')
@@ -204,16 +195,16 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
 
         cg1 = classifications.ClassificationGroup(self.ctxt, **test_cg1)
         cg2 = classifications.ClassificationGroup(self.ctxt, **test_cg2)
-        cg_list = [cg1, cg2]
+        cg_list = [self.cg_plugin._make_db_dict(cg) for cg in [cg1, cg2]]
 
         mock_manager.get_cgs.return_value = cg_list
 
-        val = self.cg_plugin.get_classification_groups(self.ctxt)
+        self.cg_plugin.get_classification_groups(self.ctxt)
 
-        self.assertEqual(val, cg_list)
         mock_manager.get_cgs.assert_called_once()
         mock_manager.pager.assert_called_once()
-        self.assertEqual(len(mock_manager.mock_calls), 2)
+        mock_manager.db_dicts.assert_called_once()
+        self.assertEqual(len(mock_manager.mock_calls), 3)
 
     @mock.patch.object(classifications.ClassificationGroup, 'update_object')
     def test_update_classification_group(self, mock_cg_update):
@@ -226,13 +217,16 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
 
         cg = classifications.ClassificationGroup(self.ctxt, **test_cg)
 
-        updated_fields = {'name': 'Test Group Updated',
-                          'description': 'Updated Description'}
+        updated_fields = {'classification_group':
+                          {'name': 'Test Group Updated',
+                           'description': 'Updated Description'}}
 
         self.cg_plugin.update_classification_group(self.ctxt, cg.id,
                                                    updated_fields)
+        updated_fields_called = {'name': 'Test Group Updated',
+                                 'description': 'Updated Description'}
 
         mock_manager.cg_update.assert_called_once()
         mock_manager.cg_update.assert_called_once_with(self.ctxt,
-                                                       updated_fields,
+                                                       updated_fields_called,
                                                        id=cg.id)
