@@ -67,8 +67,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
                 'project_id': uuidutils.generate_uuid(),
                 'operator': 'AND',
                 'shared': False,
-                'classifications': [self.c_id1, self.c_id2],
-                'classification_groups': [self.cg_id]}
+                'classification': [self.c_id1, self.c_id2],
+                'classification_group': [self.cg_id]}
         }
         return self.test_cg
 
@@ -96,8 +96,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
 
         self.assertEqual(val, expected_val)
 
-        c_len = len(val['classifications'])
-        cg_len = len(val['classification_groups'])
+        c_len = len(val['classification'])
+        cg_len = len(val['classification_group'])
         mock_call_len = len(mock_manager.mock_calls)
         self.assertEqual(mock_call_len, c_len + cg_len + 1)
 
