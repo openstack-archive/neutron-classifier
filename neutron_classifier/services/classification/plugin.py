@@ -140,6 +140,8 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
         return cl_dict
 
     def merge_headers(self, classifications):
+        if not classifications:
+            return {}
         c_type = classifications[0]['c_type']
         ret_list = {CLASSIFICATION_MAP[c_type]: []}
 
