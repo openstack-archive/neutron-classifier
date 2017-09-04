@@ -21,7 +21,7 @@
               openstack-infra/devstack-gate
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
-      environment: '{{ zuul | zuul_legacy_vars }}'
+        environment: '{{ zuul | zuul_legacy_vars }}'
 
     - shell:
         cmd: |
@@ -33,7 +33,7 @@
           EOF
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
-      environment: '{{ zuul | zuul_legacy_vars }}'
+        environment: '{{ zuul | zuul_legacy_vars }}'
 
     - shell:
         cmd: |
@@ -67,4 +67,4 @@
           ./safe-devstack-vm-gate-wrap.sh
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
-      environment: '{{ zuul | zuul_legacy_vars }}'
+        environment: '{{ zuul | zuul_legacy_vars }}'
