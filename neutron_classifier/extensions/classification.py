@@ -87,7 +87,7 @@ class Classification(api_ext.ExtensionDescriptor):
                                                         allow_bulk=True)
 
         for resource in resources:
-            resource.path_prefix = '/classifications'
+            resource.path_prefix = 'ccf/classifications'
 
         return resources
 
@@ -102,7 +102,7 @@ class Classification(api_ext.ExtensionDescriptor):
 @six.add_metaclass(ABCMeta)
 class NeutronClassificationPluginBase(service_base.ServicePluginBase):
 
-    path_prefix = '/classifications'
+    path_prefix = 'ccf/classifications'
 
     def get_plugin_name(self):
         return EXT_NAME
