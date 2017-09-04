@@ -128,22 +128,27 @@ class TestPlugin(base.BaseClassificationTestCase):
         self.assertEqual(expected_val, val)
         mock_manager.create.assert_called_once()
 
+    @mock.patch.object(plugin.ClassificationPlugin, 'merge_header')
     @mock.patch.object(class_group.ClassificationBase, 'get_object')
     @mock.patch.object(class_group.EthernetClassification, 'update_object')
-    def test_update_classification(self, mock_ethernet_update,
-                                   mock_class_get):
+    @mock.patch.object(class_group.EthernetClassification, 'id',
+                       return_value=uuidutils.generate_uuid())
+    def test_update_classification(self,  mock_id, mock_ethernet_update,
+                                   mock_class_get, mock_merge):
         mock_manager = mock.Mock()
+        mock_manager.attach_mock(mock_id, 'id')
         mock_manager.attach_mock(mock_ethernet_update, 'update')
         mock_manager.attach_mock(mock_class_get, 'get_classification')
+        mock_manager.attach_mock(mock_merge, 'merge_header')
         mock_manager.reset_mock()
         mock_manager.start()
 
         class_obj = class_group.EthernetClassification(
             self.ctxt, **self.test_classification_broken_headers)
 
-        ethernet_classification_update = {
+        ethernet_classification_update = {'classification': {
             'name': 'test_ethernet_classification Version 2',
-            'description': 'Test Ethernet Classification Version 2'}
+            'description': 'Test Ethernet Classification Version 2'}}
 
         mock_manager.get_classification().c_type = 'ethernet'
         self.cl_plugin.update_classification(
