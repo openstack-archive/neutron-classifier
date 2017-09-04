@@ -21,7 +21,7 @@ from neutron_classifier.common import udp_validators
 from neutron_classifier.db import models
 from neutron_classifier.objects import classifications
 
-from neutron.db import api as db_api
+from neutron_lib.db import api as db_api
 
 type_validators = {}
 type_validators['ethernet'] = eth_validators.validators_dict
@@ -57,7 +57,7 @@ def check_can_delete_classification_group(context, cg_id):
     """
     cgs = classifications.ClassificationGroup.get_objects(context)
     for cg in cgs:
-        with db_api.context_manager.writer.using(context):
+        with db_api.CONTEXT_WRITER.using(context):
             cg_obj = classifications.ClassificationGroup.get_object(context,
                                                                     id=cg.id)
             mapped_cgs = classifications._get_mapped_classification_groups(

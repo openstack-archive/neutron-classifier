@@ -20,26 +20,18 @@ class TestClassificationType(base.BaseClassificationTestCase):
 
     def setUp(self):
         super(TestClassificationType, self).setUp()
-        common_fields = ['c_type', 'description', 'negated', 'shared',
-                         'project_id', 'id', 'name']
         common_ipv = ['src_addr', 'ecn', 'length_min', 'dscp', 'dscp_mask',
                       'length_max', 'dst_addr']
         common_tcp_udp = ['src_port_min', 'src_port_max', 'dst_port_min',
                           'dst_port_max']
-        self.ipv4_fields = common_fields + common_ipv + ['ttl_max', 'flags',
-                                                         'protocol', 'ttl_min',
-                                                         'flags_mask']
-        self.ipv6_fields = common_fields + common_ipv + ['hops_min',
-                                                         'hops_max',
-                                                         'next_header']
-        self.tcp_fields = common_fields + common_tcp_udp + ['window_min',
-                                                            'flags',
-                                                            'window_max',
-                                                            'flags_mask']
-        self.udp_fields = common_fields + common_tcp_udp + ['length_min',
-                                                            'length_max']
-        self.ethernet_fields = common_fields + ['ethertype', 'src_addr',
-                                                'dst_addr']
+        self.ipv4_fields = common_ipv + ['ttl_max', 'flags', 'protocol',
+                                         'ttl_min', 'flags_mask']
+        self.ipv6_fields = common_ipv + ['hops_min', 'hops_max',
+                                         'next_header']
+        self.tcp_fields = common_tcp_udp + ['window_min', 'flags',
+                                            'window_max', 'flags_mask']
+        self.udp_fields = common_tcp_udp + ['length_min', 'length_max']
+        self.ethernet_fields = ['ethertype', 'src_addr', 'dst_addr']
 
     def test_ipv4_cls_type(self):
         ipv4_obj = classification_type.ClassificationType.get_object('ipv4')
