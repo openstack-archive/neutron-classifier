@@ -19,8 +19,8 @@ from neutron_classifier.tests import objects_base as obj_base
 from neutron_classifier.tests import tools
 
 from neutron_lib import context
+from neutron_lib.db import api as db_api
 
-from neutron.db import api as db_api
 from neutron.tests.unit.objects import test_base
 from neutron.tests.unit import testlib_api
 
@@ -149,7 +149,7 @@ class CGToClassificationGroupMappingTest(testlib_api.SqlTestCase,
                                          obj_base._CCFObjectsTestCommon):
 
     def test_get_object(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg1 = self._create_test_cg('Test Group 0')
             cg2 = self._create_test_cg('Test Group 1')
             cg_m_cg = self._create_test_cg_cg_mapping(cg1.id, cg2.id)
@@ -163,7 +163,7 @@ class CGToClassificationGroupMappingTest(testlib_api.SqlTestCase,
             self.assertEqual(cg_m_cg, fetch_cg_m_cg)
 
     def test_multiple_cg_mappings(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg1 = self._create_test_cg('Test Group 0')
             cg2 = self._create_test_cg('Test Group 1')
             cg3 = self._create_test_cg('Test Group 2')
@@ -185,7 +185,7 @@ class CGToClassificationMappingTest(testlib_api.SqlTestCase,
     ctx = context.get_admin_context()
 
     def test_get_object(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg = self._create_test_cg('Test Group')
             cl_ = self._create_test_classification(
                 'udp', classifications.UDPClassification)
@@ -202,7 +202,7 @@ class CGToClassificationMappingTest(testlib_api.SqlTestCase,
             self.assertEqual(cg_m_c, fetch_cg_m_c)
 
     def test_multiple_c_mappings(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg = self._create_test_cg('Test Group')
             c1 = self._create_test_classification(
                 'tcp', classifications.TCPClassification)
