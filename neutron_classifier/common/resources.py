@@ -53,7 +53,7 @@ CLASSIFICATION_GROUP_RESOURCE_MAP = {
         'allow_post': True, 'allow_put': True,
         'is_visible': True, 'default': [],
         'convert_to': converters.convert_to_list},
-    'cg_ids': {
+    'classification_groups': {
         'allow_post': True, 'allow_put': True,
         'is_visible': True, 'default': []},
 }

@@ -33,17 +33,21 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
 
     def create_classification_group(self, context, classification_group):
         details = classification_group['classification_group']
+        c_flag = cg_flag = False
 
-        if details['classifications']:
+        if 'classifications' in details:
+            c_flag = True
             validators.check_valid_classifications(context,
                                                    details['classifications'])
 
-        if details['classification_groups']:
+        if 'classification_groups' in details:
+            cg_flag = True
             validators.check_valid_classification_groups(
                 context, details['classification_groups'])
         details['id'] = uuidutils.generate_uuid()
-        mappings = {'c_ids': details['classifications'],
-                    'cg_ids': details['classification_groups']}
+        mappings = {'c_ids': details['classifications'] if c_flag else [],
+                    'cg_ids': details['classification_groups']
+                    if cg_flag else []}
         db_dict = details
         cg = classifications.ClassificationGroup(context, **details)
 
@@ -52,21 +56,26 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
         db_dict['id'] = cg.id
 
         with db_api.context_manager.writer.using(context):
-            for cl in mappings['c_ids']:
-                cg_c_mapping = classifications.CGToClassificationMapping(
-                    context,
-                    container_cg_id=cg.id,
-                    stored_classification_id=cl)
-                cg_c_mapping.create()
-            for cg_id in mappings['cg_ids']:
-                cg_cg_mapping = classifications.CGToClassificationGroupMapping(
-                    context,
-                    container_cg_id=cg.id,
-                    stored_cg_id=cg_id
-                )
-                cg_cg_mapping.create()
-        db_dict['classifications'] = details['classifications']
-        db_dict['classification_group'] = details['classification_groups']
+            if c_flag:
+                for cl in mappings['c_ids']:
+                    cg_c_mapping = classifications.CGToClassificationMapping(
+                        context,
+                        container_cg_id=cg.id,
+                        stored_classification_id=cl)
+                    cg_c_mapping.create()
+            if cg_flag:
+                for cg_id in mappings['cg_ids']:
+                    cg_cg_mapping =\
+                        classifications.CGToClassificationGroupMapping(
+                            context,
+                            container_cg_id=cg.id,
+                            stored_cg_id=cg_id
+                        )
+                    cg_cg_mapping.create()
+        db_dict['classifications'] = details['classifications']\
+            if c_flag else []
+        db_dict['classification_group'] = details['classification_groups']\
+            if cg_flag else []
 
         return db_dict
 
