@@ -13,8 +13,56 @@
 - job:
     name: neutron-classifier-functional-dsvm
     parent: legacy-dsvm-base
+    pre-run: playbooks/legacy/neutron-classifier-functional-dsvm/pre.yaml
     run: playbooks/legacy/neutron-classifier-functional-dsvm/run.yaml
     post-run: playbooks/legacy/neutron-classifier-functional-dsvm/post.yaml
     timeout: 7800
     required-projects:
       - openstack-infra/devstack-gate
+      - git.openstack.org/openstack/keystone
+      - git.openstack.org/openstack/neutron
+    roles:
+      - zuul: openstack-infra/devstack
+    vars:
+      devstack_localrc:
+        DATABASE_PASSWORD: secretdatabase
+        RABBIT_PASSWORD: secretrabbit
+        ADMIN_PASSWORD: secretadmin
+        SERVICE_PASSWORD: secretservice
+        NETWORK_GATEWAY: 10.1.0.1
+        FIXED_RANGE: 10.1.0.0/20
+        IPV4_ADDRS_SAFE_TO_USE: 10.1.0.0/20
+        FLOATING_RANGE: 172.24.5.0/24
+        PUBLIC_NETWORK_GATEWAY: 172.24.5.1
+        LOGFILE: /opt/stack/logs/devstacklog.txt
+        LIBVIRT_TYPE: qemu
+        LIBS_FROM_GIT: python-openstackclient
+        GLANCE_V1_ENABLED: true
+    devstack_services:
+        dstat: true
+        etcd3: true
+        mysql: true
+        peakmem_tracker: true
+        rabbit: true
+        tls-proxy: true
+        key: true
+        n-api: true
+        n-api-meta: true
+        n-cauth: true
+        n-cond: true
+        n-cpu: true
+        n-novnc: true
+        n-obj: true
+        n-sch: true
+        placement-api: true
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
+        q-svc: true
+        horizon: false
+        tempest: false
+    osc_environment:
+        PYTHONUNBUFFERED: 'true'
+        OS_CLOUD: devstack-admin
