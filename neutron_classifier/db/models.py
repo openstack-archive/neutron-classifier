@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from neutron.db import _model_query as mq
 from neutron_lib.db import model_base
+from neutron_lib.db import model_query as mq
 
 import sqlalchemy as sa
 from sqlalchemy import orm
