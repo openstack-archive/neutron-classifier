@@ -1,5 +1,7 @@
 - hosts: all
   name: neutron-classifier-functional-dsvm
+  environment:
+    OS_CLOUD: devstack-admin
   tasks:
 
     - name: Ensure legacy workspace directory
