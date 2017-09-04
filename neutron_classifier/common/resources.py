@@ -46,14 +46,14 @@ CLASSIFICATION_GROUP_RESOURCE_MAP = {
         'convert_to': converters.convert_to_boolean},
     'operator': {
         'allow_post': True, 'allow_put': True,
-        'is_visible': True, 'default': 'and',
+        'is_visible': True, 'default': 'AND',
         'validate': {'type:string': const.NAME_FIELD_SIZE},
         'convert_to': validate_string},
-    'classifications': {
+    'classification': {
         'allow_post': True, 'allow_put': True,
         'is_visible': True, 'default': [],
         'convert_to': converters.convert_to_list},
-    'cg_ids': {
+    'classification_group': {
         'allow_post': True, 'allow_put': True,
         'is_visible': True, 'default': []},
 }
