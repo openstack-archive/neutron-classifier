@@ -14,7 +14,8 @@
 
 from oslo_utils import uuidutils
 
-from neutron.db import api as db_api
+from neutron_lib.db import api as db_api
+
 from neutron.tests.unit import testlib_api
 
 from neutron_classifier.common import exceptions
@@ -35,7 +36,7 @@ class ClassificationGroupApiTest(testlib_api.MySQLTestCaseMixin,
         self.test_plugin = cg_plugin()
 
     def test_get_classification_group(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg = self._create_test_cg('Test Group 0')
             cg_dict = self.test_plugin._make_db_dict(cg)
             fetch_cg = self.test_plugin.get_classification_group(self.ctx,
@@ -47,15 +48,15 @@ class ClassificationGroupApiTest(testlib_api.MySQLTestCaseMixin,
         self.assertEqual(cg_dict, fetch_cg)
 
     def test_get_classification_groups(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg1 = self._create_test_cg('Test Group 1')
             cg2 = self._create_test_cg('Test Group 2')
+            test_cgs = self.test_plugin._make_db_dicts([cg1, cg2])
             cgs = self.test_plugin.get_classification_groups(self.ctx)
-        self.assertIn(cg1, cgs)
-        self.assertIn(cg2, cgs)
+        self.assertItemsEqual(test_cgs, cgs)
 
     def test_create_classification_group(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             tcp_class = classifications.TCPClassification
             ipv4_class = classifications.IPV4Classification
             cg2 = self._create_test_cg('Test Group 1')
@@ -89,22 +90,24 @@ class ClassificationGroupApiTest(testlib_api.MySQLTestCaseMixin,
                     c, cg_dict['classification_group']['classifications'])
 
     def test_update_classification_group(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg1 = self._create_test_cg('Test Group 0')
             cg2 = self._create_test_cg('Test Group 1')
             self.test_plugin.update_classification_group(
-                self.ctx, cg1.id, {'name': 'Test Group updated'})
+                self.ctx, cg1.id,
+                {'classification_group': {'name': 'Test Group updated'}})
             fetch_cg1 = classifications.ClassificationGroup.get_object(
                 self.ctx, id=cg1['id'])
             self.assertRaises(
                 exceptions.InvalidUpdateRequest,
                 self.test_plugin.update_classification_group,
-                self.ctx, cg2.id, {'name': 'Test Group updated',
-                                   'operator': 'OR'})
+                self.ctx, cg2.id,
+                {'classification_group': {'name': 'Test Group updated',
+                                          'operator': 'OR'}})
             self.assertEqual(fetch_cg1.name, 'Test Group updated')
 
     def test_delete_classification_group(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             cg1 = self._create_test_cg('Test Group 0')
             self.test_plugin.delete_classification_group(self.ctx, cg1.id)
             fetch_cg1 = classifications.ClassificationGroup.get_object(
@@ -127,7 +130,7 @@ class ClassificationApiTest(testlib_api.MySQLTestCaseMixin,
         for key in validators.type_validators[c_type].keys():
             attrs['definition'][key] = attrs.pop(key, None)
         c_attrs = {'classification': attrs}
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             c1 = self.test_clas_plugin.create_classification(self.ctx,
                                                              c_attrs)
             fetch_c1 = classifications.EthernetClassification.get_object(
@@ -145,7 +148,7 @@ class ClassificationApiTest(testlib_api.MySQLTestCaseMixin,
 
     def test_delete_classification(self):
         tcp_class = classifications.TCPClassification
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             tcp = self._create_test_classification('tcp', tcp_class)
             self.test_clas_plugin.delete_classification(self.ctx, tcp.id)
             fetch_tcp = classifications.TCPClassification.get_object(
@@ -154,34 +157,34 @@ class ClassificationApiTest(testlib_api.MySQLTestCaseMixin,
 
     def test_get_classification(self):
         ipv4_class = classifications.IPV4Classification
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             ipv4 = self._create_test_classification('ipv4', ipv4_class)
             fetch_ipv4 = self.test_clas_plugin.get_classification(self.ctx,
                                                                   ipv4.id)
         self.assertEqual(fetch_ipv4, self.test_clas_plugin.merge_header(ipv4))
 
     def test_get_classifications(self):
-        with db_api.context_manager.writer.using(self.ctx):
+        with db_api.CONTEXT_WRITER.using(self.ctx):
             c1 = self._create_test_classification(
                 'ipv6', classifications.IPV6Classification)
             c2 = self._create_test_classification(
                 'udp', classifications.UDPClassification)
-            fetch_cs = self.test_clas_plugin.get_classifications(
-                self.ctx, filters={'c_type': ['udp', 'ipv6']})
+            fetch_cs_udp = self.test_clas_plugin.get_classifications(
+                self.ctx, filters={'c_type': ['udp']})
+            fetch_cs_ipv6 = self.test_clas_plugin.get_classifications(
+                self.ctx, filters={'c_type': ['ipv6']})
         c1_dict = self.test_clas_plugin.merge_header(c1)
         c2_dict = self.test_clas_plugin.merge_header(c2)
-        self.assertIn({'UDPClassifications': [c2_dict]},
-                      fetch_cs['classifications'])
-        self.assertIn({'IPV6Classifications': [c1_dict]},
-                      fetch_cs['classifications'])
+        self.assertIn(c1_dict, fetch_cs_ipv6)
+        self.assertIn(c2_dict, fetch_cs_udp)
 
     def test_update_classification(self):
         c1 = self._create_test_classification(
             'ethernet', classifications.EthernetClassification)
         updated_name = 'Test Updated Classification'
-        with db_api.context_manager.writer.using(self.ctx):
-            self.test_clas_plugin.update_classification(self.ctx, c1.id,
-                                                        {'name': updated_name})
+        with db_api.CONTEXT_WRITER.using(self.ctx):
+            self.test_clas_plugin.update_classification(
+                self.ctx, c1.id, {'classification': {'name': updated_name}})
             fetch_c1 = classifications.EthernetClassification.get_object(
                 self.ctx, id=c1.id)
         self.assertEqual(fetch_c1.name, updated_name)
