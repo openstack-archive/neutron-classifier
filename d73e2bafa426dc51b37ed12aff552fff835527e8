@@ -1,0 +1,11 @@
+Verified+1: Jenkins
+Code-Review+1: Thomas Morin <tmmorin.orange@gmail.com>
+Code-Review+1: Bernard Cafarelli <bcafarel@redhat.com>
+Code-Review+2: Igor Duarte Cardoso <igor.duarte.cardoso@intel.com>
+Workflow+1: David Shaughnessy <david.shaughnessy@intel.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Wed, 18 Oct 2017 05:32:02 +0000
+Reviewed-on: https://review.openstack.org/498471
+Project: openstack/neutron-classifier
+Branch: refs/heads/master
