@@ -1,0 +1,10 @@
+Code-Review+2: Bernard Cafarelli <bcafarel@redhat.com>
+Code-Review+1: Nakul Dahiwade <nakul.dahiwade@intel.com>
+Code-Review+2: Thomas Morin <tmmorin.orange@gmail.com>
+Workflow+1: Thomas Morin <tmmorin.orange@gmail.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Fri, 12 Jan 2018 09:58:55 +0000
+Reviewed-on: https://review.openstack.org/532190
+Project: openstack/neutron-classifier
+Branch: refs/heads/master
