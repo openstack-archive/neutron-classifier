@@ -9,9 +9,9 @@ Please feel here a long description which must be at least 3 lines wrapped on
 Note that this is a hard requirement.
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/neutron-classifier
-* Source: http://git.openstack.org/cgit/openstack/neutron-classifier
-* Bugs: http://bugs.launchpad.net/neutron
+* Documentation: https://wiki.openstack.org/wiki/Neutron/CommonClassificationFramework
+* Source: https://git.openstack.org/cgit/openstack/neutron-classifier
+* Bugs: https://bugs.launchpad.net/neutron
 
 Features
 --------
