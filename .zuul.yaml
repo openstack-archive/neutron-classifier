@@ -1,18 +1,17 @@
 - project:
-    name: openstack/neutron-classifier
     check:
       jobs:
         - openstack-tox-functional:
             required-projects:
-                - openstack/neutron
+              - openstack/neutron
         - openstack-tox-functional-py35:
             required-projects:
-                - openstack/neutron
+              - openstack/neutron
     gate:
       jobs:
         - openstack-tox-functional:
             required-projects:
-                - openstack/neutron
+              - openstack/neutron
         - openstack-tox-functional-py35:
             required-projects:
-                - openstack/neutron
+              - openstack/neutron
