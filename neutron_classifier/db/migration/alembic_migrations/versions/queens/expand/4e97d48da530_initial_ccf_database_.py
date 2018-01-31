@@ -35,21 +35,20 @@ def upgrade():
         sa.Column('id', sa.String(length=36), primary_key=True),
         sa.Column('name', sa.String(length=255)),
         sa.Column('description', sa.String(length=255)),
-        sa.Column('project_id', sa.String(length=255),
-                  index=True),
+        sa.Column('project_id', sa.String(length=255), index=True),
         sa.Column('shared', sa.Boolean(), nullable=False),
-        sa.Column('operator', sa.Enum("AND", "OR"), nullable=False))
+        sa.Column('operator', sa.Enum("AND", "OR", 
+                  name="operator_types"), default='AND', nullable=False))
 
     op.create_table(
         'classifications',
-        sa.Column('id', sa.String(length=36), primary_key=True),
+        sa.Column('id', sa.String(length=36), primary_key=True, nullable=False),
         sa.Column('c_type', sa.String(length=36)),
         sa.Column('name', sa.String(length=255)),
         sa.Column('description', sa.String(length=255)),
         sa.Column('negated', sa.Boolean(), nullable=True),
         sa.Column('shared', sa.Boolean(), nullable=True),
-        sa.Column('project_id', sa.String(length=255),
-                  index=True))
+        sa.Column('project_id', sa.String(length=255), index=True))
 
     op.create_table(
         'classification_group_to_classification_mappings',
@@ -71,7 +70,7 @@ def upgrade():
                   "classifications.id"), primary_key=True),
         sa.Column('dscp', sa.Integer()),
         sa.Column('dscp_mask', sa.Integer()),
-        sa.Column('ecn', sa.Enum("0", "1", "2", "3")),
+        sa.Column('ecn', sa.Enum("0", "1", "2", "3", name="ecn_types")),
         sa.Column('length_min', sa.Integer()),
         sa.Column('length_max', sa.Integer()),
         sa.Column('flags', sa.Integer()),
@@ -88,7 +87,7 @@ def upgrade():
                   "classifications.id"), primary_key=True),
         sa.Column('dscp', sa.Integer()),
         sa.Column('dscp_mask', sa.Integer()),
-        sa.Column('ecn', sa.Enum("0", "1", "2", "3")),
+        sa.Column('ecn', sa.Enum("0", "1", "2", "3", name="ecn_types")),
         sa.Column('length_min', sa.Integer()),
         sa.Column('length_max', sa.Integer()),
         sa.Column('next_header', sa.Integer()),

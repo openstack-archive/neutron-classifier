@@ -17,19 +17,20 @@ from neutron_lib.db import model_base
 
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+import pdb
 
 Base = declarative_base()
 
 
 # Service plugin models
 class ClassificationGroup(model_base.BASEV2, model_base.HasId,
-                          model_base.HasProject):
+                               model_base.HasProject):
     __tablename__ = 'classification_groups'
     name = sa.Column(sa.String(255))
     description = sa.Column(sa.String(255))
-    shared = sa.Column(sa.Boolean(), default=False)
-    operator = sa.Column(sa.Enum('AND', 'OR'), default='AND')
-
+    shared = sa.Column(sa.Boolean(), default=False, nullable=False)
+    operator = sa.Column(sa.Enum('AND', 'OR', name='operator_types'), default='AND', nullable=False)
 
 class CGToClassificationMapping(model_base.BASEV2):
     __tablename__ = 'classification_group_to_classification_mappings'
@@ -37,8 +38,8 @@ class CGToClassificationMapping(model_base.BASEV2):
                                 sa.ForeignKey('classification_groups.id'),
                                 primary_key=True)
     stored_classification_id = sa.Column(sa.String(36),
-                                         sa.ForeignKey('classifications.id'),
-                                         primary_key=True)
+                               sa.ForeignKey('classifications.id'),
+                               primary_key=True)
 
 
 class CGToClassificationGroupMapping(model_base.BASEV2):
@@ -51,25 +52,24 @@ class CGToClassificationGroupMapping(model_base.BASEV2):
                              primary_key=True)
 
 
-class ClassificationBase(Base, model_base.HasId, model_base.HasProject,
-                         model_base.BASEV2):
+class ClassificationBase(model_base.BASEV2, model_base.HasId,
+                         model_base.HasProject):
     __tablename__ = 'classifications'
     c_type = sa.Column(sa.String(36))
     __mapper_args__ = {'polymorphic_on': c_type}
     name = sa.Column(sa.String(255))
     description = sa.Column(sa.String(255))
-    shared = sa.Column(sa.Boolean())
-    negated = sa.Column(sa.Boolean())
+    shared = sa.Column(sa.Boolean(), nullable=True)
+    negated = sa.Column(sa.Boolean(), nullable=True)
 
-
-class IPV4Classification(ClassificationBase):
+class IPV4Classification(model_base.BASEV2):
     __tablename__ = 'ipv4_classifications'
     __mapper_args__ = {'polymorphic_identity': 'ipv4'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
                    primary_key=True)
     dscp = sa.Column(sa.Integer())
     dscp_mask = sa.Column(sa.Integer())
-    ecn = sa.Column(sa.Enum("0", "1", "2", "3"))
+    ecn = sa.Column(sa.Enum("0", "1", "2", "3", name="ecn_types"))
     length_min = sa.Column(sa.Integer())
     length_max = sa.Column(sa.Integer())
     flags = sa.Column(sa.Integer())
@@ -80,15 +80,15 @@ class IPV4Classification(ClassificationBase):
     src_addr = sa.Column(sa.String(19))
     dst_addr = sa.Column(sa.String(19))
 
-
-class IPV6Classification(ClassificationBase):
+#class IPV6Classification(ClassificationBase):
+class IPV6Classification(model_base.BASEV2):
     __tablename__ = 'ipv6_classifications'
     __mapper_args__ = {'polymorphic_identity': 'ipv6'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
                    primary_key=True)
     dscp = sa.Column(sa.Integer())
     dscp_mask = sa.Column(sa.Integer())
-    ecn = sa.Column(sa.Enum("0", "1", "2", "3"))
+    ecn = sa.Column(sa.Enum("0", "1", "2", "3", name="ecn_types"))
     length_min = sa.Column(sa.Integer())
     length_max = sa.Column(sa.Integer())
     next_header = sa.Column(sa.Integer())
@@ -98,7 +98,8 @@ class IPV6Classification(ClassificationBase):
     dst_addr = sa.Column(sa.String(49))
 
 
-class EthernetClassification(ClassificationBase):
+#class EthernetClassification(ClassificationBase):
+class EthernetClassification(model_base.BASEV2):
     __tablename__ = 'ethernet_classifications'
     __mapper_args__ = {'polymorphic_identity': 'ethernet'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
@@ -108,7 +109,8 @@ class EthernetClassification(ClassificationBase):
     dst_addr = sa.Column(sa.String(17))
 
 
-class UDPClassification(ClassificationBase):
+#class UDPClassification(ClassificationBase):
+class UDPClassification(model_base.BASEV2):
     __tablename__ = 'udp_classifications'
     __mapper_args__ = {'polymorphic_identity': 'udp'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
@@ -121,7 +123,8 @@ class UDPClassification(ClassificationBase):
     length_max = sa.Column(sa.Integer())
 
 
-class TCPClassification(ClassificationBase):
+#class TCPClassification(ClassificationBase):
+class TCPClassification(model_base.BASEV2):
     __tablename__ = 'tcp_classifications'
     __mapper_args__ = {'polymorphic_identity': 'tcp'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id'),
@@ -143,7 +146,9 @@ def _read_classification_groups(svc_plu, context, id=None):
                                      _generate_dict_from_cgmapping_db)
     cg_m_cg = svc_plu._get_collection(context, CGToClassificationGroupMapping,
                                       _generate_dict_from_cgmapping_db)
+
     id_class = None
+    pdb.set_trace()
     for cg in class_group:
         class_ids = []
         group_ids = []
