@@ -1,0 +1,9 @@
+Code-Review+2: David Shaughnessy <david.shaughnessy@intel.com>
+Code-Review+2: Bernard Cafarelli <bcafarel@redhat.com>
+Workflow+1: Bernard Cafarelli <bcafarel@redhat.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Wed, 05 Dec 2018 00:11:37 +0000
+Reviewed-on: https://review.openstack.org/622497
+Project: openstack/neutron-classifier
+Branch: refs/heads/master
