@@ -16,11 +16,17 @@
 
 from neutron_classifier.objects import classifications as cs
 
-FIELDS_IPV4 = cs.IPV4Classification.fields.keys()
-FIELDS_IPV6 = cs.IPV6Classification.fields.keys()
-FIELDS_TCP = cs.TCPClassification.fields.keys()
-FIELDS_UDP = cs.UDPClassification.fields.keys()
-FIELDS_ETHERNET = cs.EthernetClassification.fields.keys()
+COMMON_FIELDS = cs.ClassificationBase.fields.keys()
+FIELDS_IPV4 = list(set(cs.IPV4Classification.fields.keys()) -
+                   set(COMMON_FIELDS))
+FIELDS_IPV6 = list(set(cs.IPV6Classification.fields.keys()) -
+                   set(COMMON_FIELDS))
+FIELDS_TCP = list(set(cs.TCPClassification.fields.keys()) -
+                  set(COMMON_FIELDS))
+FIELDS_UDP = list(set(cs.UDPClassification.fields.keys()) -
+                  set(COMMON_FIELDS))
+FIELDS_ETHERNET = list(set(cs.EthernetClassification.fields.keys()) -
+                       set(COMMON_FIELDS))
 
 
 SUPPORTED_FIELDS = {'ipv4': FIELDS_IPV4,

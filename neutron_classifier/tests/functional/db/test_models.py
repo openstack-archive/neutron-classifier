@@ -14,10 +14,10 @@
 
 import copy
 
-from neutron.db import _model_query as mq
 from neutron.tests.unit import testlib_api
 from neutron_classifier.db import models
 from neutron_lib import context
+from neutron_lib.db import model_query as mq
 
 from oslo_utils import uuidutils
 
