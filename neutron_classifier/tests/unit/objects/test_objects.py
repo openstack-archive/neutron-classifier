@@ -14,6 +14,7 @@
 
 import oslo_versionedobjects
 
+from neutron.objects import classification as cs_base
 from neutron_classifier.objects import classifications
 from neutron_classifier.tests import objects_base as obj_base
 from neutron_classifier.tests import tools
@@ -33,18 +34,18 @@ class ClassificationGroupTest(test_base.BaseDbObjectTestCase,
     # we are adding it here for our use rather than adding in neutron.
     test_base.FIELD_TYPE_VALUE_GENERATOR_MAP[
         oslo_versionedobjects.fields.EnumField] = tools.get_random_operator
-    _test_class = classifications.ClassificationGroup
+    _test_class = cs_base.ClassificationGroup
 
     def test_get_object(self):
         cg = self._create_test_cg('Test Group 0')
-        fetch_cg = classifications.ClassificationGroup.get_object(
+        fetch_cg = cs_base.ClassificationGroup.get_object(
             self.ctx, id=cg.id)
         self.assertEqual(cg, fetch_cg)
 
     def test_get_objects(self):
         cg1 = self._create_test_cg('Test Group 1')
         cg2 = self._create_test_cg('Test Group 2')
-        cgs = classifications.ClassificationGroup.get_objects(self.ctx)
+        cgs = cs_base.ClassificationGroup.get_objects(self.ctx)
         self.assertIn(cg1, cgs)
         self.assertIn(cg2, cgs)
 
@@ -153,11 +154,11 @@ class CGToClassificationGroupMappingTest(testlib_api.SqlTestCase,
             cg1 = self._create_test_cg('Test Group 0')
             cg2 = self._create_test_cg('Test Group 1')
             cg_m_cg = self._create_test_cg_cg_mapping(cg1.id, cg2.id)
-            fetch_cg = classifications.ClassificationGroup.get_object(
+            fetch_cg = cs_base.ClassificationGroup.get_object(
                 self.ctx, id=cg1.id)
             mapped_cg = classifications._get_mapped_classification_groups(
                 self.ctx, fetch_cg)
-            fetch_cg_m_cg = classifications.CGToClassificationGroupMapping.\
+            fetch_cg_m_cg = cs_base.CGToClassificationGroupMapping.\
                 get_object(self.ctx, id=cg_m_cg.container_cg_id)
             self.assertEqual(mapped_cg[0], cg2)
             self.assertEqual(cg_m_cg, fetch_cg_m_cg)
@@ -171,7 +172,7 @@ class CGToClassificationGroupMappingTest(testlib_api.SqlTestCase,
             cgs = [cg2, cg3, cg4]
             for cg in cgs:
                 self._create_test_cg_cg_mapping(cg1.id, cg.id)
-            fetch_cg1 = classifications.ClassificationGroup.get_object(
+            fetch_cg1 = cs_base.ClassificationGroup.get_object(
                 self.ctx, id=cg1.id)
             mapped_cgs = classifications._get_mapped_classification_groups(
                 self.ctx, fetch_cg1)
@@ -192,11 +193,11 @@ class CGToClassificationMappingTest(testlib_api.SqlTestCase,
             cg_m_c = self._create_test_cg_c_mapping(cg.id, cl_.id)
             fetch_c = classifications.UDPClassification.get_object(
                 self.ctx, id=cl_.id)
-            fetch_cg = classifications.ClassificationGroup.get_object(
+            fetch_cg = cs_base.ClassificationGroup.get_object(
                 self.ctx, id=cg.id)
             mapped_cs = classifications._get_mapped_classifications(
                 self.ctx, fetch_cg)
-            fetch_cg_m_c = classifications.CGToClassificationMapping. \
+            fetch_cg_m_c = cs_base.CGToClassificationMapping. \
                 get_object(self.ctx, id=cg_m_c.container_cg_id)
             self.assertIn(fetch_c, mapped_cs)
             self.assertEqual(cg_m_c, fetch_cg_m_c)
@@ -213,7 +214,7 @@ class CGToClassificationMappingTest(testlib_api.SqlTestCase,
             cs = [c1, c2, c3]
             for c in cs:
                 self._create_test_cg_c_mapping(cg.id, c.id)
-            fetch_cg = classifications.ClassificationGroup.get_object(
+            fetch_cg = cs_base.ClassificationGroup.get_object(
                 self.ctx, id=cg.id)
             mapped_cs = classifications._get_mapped_classifications(
                 self.ctx, fetch_cg)

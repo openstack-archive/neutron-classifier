@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron.objects import classification as cs_base
 from neutron_classifier.common import eth_validators
 from neutron_classifier.common import exceptions
 from neutron_classifier.common import ipv4_validators
@@ -33,7 +34,7 @@ type_validators['udp'] = udp_validators.validators_dict
 
 def check_valid_classifications(context, cs):
     for c_id in cs:
-        c_model = classifications.ClassificationBase
+        c_model = cs_base.ClassificationBase
         c = c_model.get_object(context, id=c_id)
         c_type_clas = classifications.CLASS_MAP[c.c_type]
         classification = c_type_clas.get_object(context, id=c_id)
