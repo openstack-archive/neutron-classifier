@@ -15,3 +15,4 @@ def register_objects():
     # local import to avoid circular import failure
     __import__('neutron_classifier.objects.classifications')
     __import__('neutron_classifier.objects.classification_type')
+    __import__('neutron.objects.classification')

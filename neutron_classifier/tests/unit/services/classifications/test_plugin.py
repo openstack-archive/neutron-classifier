@@ -14,6 +14,7 @@
 
 import mock
 from neutron.objects import base as base_obj
+from neutron.objects import classification as cs_base
 from neutron_classifier.objects import classifications as class_group
 from neutron_classifier.services.classification import plugin
 from neutron_classifier.tests import base
@@ -31,6 +32,8 @@ class TestPlugin(base.BaseClassificationTestCase):
         mock.patch('neutron.objects.db.api.update_object').start()
         mock.patch('neutron.objects.db.api.delete_object').start()
         mock.patch('neutron.objects.db.api.get_object').start()
+        mock.patch('neutron_classifier.services.classification.advertiser'
+                   '.ClassificationAdvertiser').start()
 
         self.cl_plugin = plugin.ClassificationPlugin()
 
@@ -129,7 +132,7 @@ class TestPlugin(base.BaseClassificationTestCase):
         mock_manager.create.assert_called_once()
 
     @mock.patch.object(plugin.ClassificationPlugin, 'merge_header')
-    @mock.patch.object(class_group.ClassificationBase, 'get_object')
+    @mock.patch.object(cs_base.ClassificationBase, 'get_object')
     @mock.patch.object(class_group.EthernetClassification, 'update_object')
     @mock.patch.object(class_group.EthernetClassification, 'id',
                        return_value=uuidutils.generate_uuid())
@@ -164,7 +167,7 @@ class TestPlugin(base.BaseClassificationTestCase):
         self.assertIn(classification_update_mock_call, mock_manager.mock_calls)
         self.assertEqual(mock_manager.get_classification.call_count, 2)
 
-    @mock.patch.object(class_group.ClassificationBase, 'get_object')
+    @mock.patch.object(cs_base.ClassificationBase, 'get_object')
     @mock.patch.object(class_group.EthernetClassification, 'get_object')
     def test_delete_classification(self, mock_ethernet_get, mock_base_get):
         mock_manager = mock.Mock()
@@ -174,7 +177,7 @@ class TestPlugin(base.BaseClassificationTestCase):
         eth_class_obj = class_group.EthernetClassification(
             self.ctxt, **self.test_classification_broken_headers)
         eth_class_obj.delete = mock.Mock()
-        base_class_obj = class_group.ClassificationBase(
+        base_class_obj = cs_base.ClassificationBase(
             self.ctxt, **self.test_classification_broken_headers)
 
         mock_base_get.return_value = base_class_obj
@@ -193,7 +196,7 @@ class TestPlugin(base.BaseClassificationTestCase):
                          mock_manager.mock_calls)
         self.assertTrue(eth_class_obj.delete.assert_called_once)
 
-    @mock.patch.object(class_group.ClassificationBase, 'get_object')
+    @mock.patch.object(cs_base.ClassificationBase, 'get_object')
     @mock.patch.object(class_group.EthernetClassification, 'get_object')
     def test_get_classification(self, mock_ethernet_get,
                                 mock_base_get):
@@ -206,7 +209,7 @@ class TestPlugin(base.BaseClassificationTestCase):
 
         definition = eth_classification.pop('definition')
 
-        base_class_obj = class_group.ClassificationBase(
+        base_class_obj = cs_base.ClassificationBase(
             self.ctxt, **eth_classification)
         eth_class_obj = class_group.EthernetClassification(
             self.ctxt, **self.test_classification_broken_headers)
@@ -227,7 +230,7 @@ class TestPlugin(base.BaseClassificationTestCase):
                          mock_manager.mock_calls)
         self.assertTrue(eth_classification, value)
 
-    @mock.patch.object(class_group.ClassificationBase, 'get_objects')
+    @mock.patch.object(cs_base.ClassificationBase, 'get_objects')
     @mock.patch.object(class_group.EthernetClassification, 'get_objects')
     @mock.patch.object(base_obj, 'Pager')
     def test_get_classifications(self, mock_pager, mock_ethernet_get,
@@ -242,9 +245,9 @@ class TestPlugin(base.BaseClassificationTestCase):
         definition = eth_cl_1.pop('definition')
         definition_2 = eth_cl_2.pop('definition')
 
-        base_class_obj_1 = class_group.ClassificationBase(
+        base_class_obj_1 = cs_base.ClassificationBase(
             self.ctxt, **eth_cl_1)
-        base_class_obj_2 = class_group.ClassificationBase(
+        base_class_obj_2 = cs_base.ClassificationBase(
             self.ctxt, **eth_cl_2)
         eth_class_obj_1 = class_group.EthernetClassification(
             self.ctxt, **self.test_classification_broken_headers)

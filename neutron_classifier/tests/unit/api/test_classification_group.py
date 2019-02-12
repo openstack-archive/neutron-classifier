@@ -14,9 +14,8 @@
 
 import mock
 from neutron.objects import base as base_obj
+from neutron.objects import classification as cs_base
 from neutron_classifier.db import classification as cg_api
-from neutron_classifier.objects import classifications
-
 from neutron_classifier.tests import base
 from neutron_lib import context
 from oslo_utils import uuidutils
@@ -72,10 +71,10 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         }
         return self.test_cg
 
-    @mock.patch.object(classifications.CGToClassificationGroupMapping,
+    @mock.patch.object(cs_base.CGToClassificationGroupMapping,
                        'create')
-    @mock.patch.object(classifications.CGToClassificationMapping, 'create')
-    @mock.patch.object(classifications.ClassificationGroup, 'create')
+    @mock.patch.object(cs_base.CGToClassificationMapping, 'create')
+    @mock.patch.object(cs_base.ClassificationGroup, 'create')
     def test_create_classification_group(self, mock_cg_create,
                                          mock_cg_c_mapping_create,
                                          mock_cg_cg_mapping_create):
@@ -105,7 +104,7 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         mock_manager.create_cg_cg.assert_called_once()
         self.assertEqual(mock_manager.create_cg_c.call_count, c_len)
 
-    @mock.patch.object(classifications.ClassificationGroup, 'get_object')
+    @mock.patch.object(cs_base.ClassificationGroup, 'get_object')
     @mock.patch('neutron_classifier.common.validators.'
                 'check_can_delete_classification_group')
     def test_delete_classification_group(self, mock_valid_delete,
@@ -138,7 +137,7 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
                 '_get_mapped_classification_groups')
     @mock.patch('neutron_classifier.objects.classifications.'
                 '_get_mapped_classifications')
-    @mock.patch.object(classifications.ClassificationGroup, 'get_object')
+    @mock.patch.object(cs_base.ClassificationGroup, 'get_object')
     @mock.patch('neutron_classifier.db.classification.'
                 'TrafficClassificationGroupPlugin._make_db_dicts')
     def test_get_classification_group(self, mock_db_dicts, mock_cg_get,
@@ -177,7 +176,7 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         mock_mapped_cgs.assert_called_once()
 
     @mock.patch.object(base_obj, 'Pager')
-    @mock.patch.object(classifications.ClassificationGroup, 'get_objects')
+    @mock.patch.object(cs_base.ClassificationGroup, 'get_objects')
     @mock.patch.object(cg_api.TrafficClassificationGroupPlugin,
                        '_make_db_dicts')
     def test_get_classification_groups(self, mock_db_dicts, mock_cgs_get,
@@ -193,8 +192,8 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         test_cg1 = test_cg1['classification_group']
         test_cg2 = test_cg2['classification_group']
 
-        cg1 = classifications.ClassificationGroup(self.ctxt, **test_cg1)
-        cg2 = classifications.ClassificationGroup(self.ctxt, **test_cg2)
+        cg1 = cs_base.ClassificationGroup(self.ctxt, **test_cg1)
+        cg2 = cs_base.ClassificationGroup(self.ctxt, **test_cg2)
         cg_list = [self.cg_plugin._make_db_dict(cg) for cg in [cg1, cg2]]
 
         mock_manager.get_cgs.return_value = cg_list
@@ -206,7 +205,7 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         mock_manager.db_dicts.assert_called_once()
         self.assertEqual(len(mock_manager.mock_calls), 3)
 
-    @mock.patch.object(classifications.ClassificationGroup, 'update_object')
+    @mock.patch.object(cs_base.ClassificationGroup, 'update_object')
     def test_update_classification_group(self, mock_cg_update):
         mock_manager = mock.Mock()
         mock_manager.attach_mock(mock_cg_update, 'cg_update')
@@ -215,7 +214,7 @@ class TestClassificationGroupPlugin(base.BaseClassificationTestCase):
         test_cg = self._generate_test_classification_group('Test Group')
         test_cg = test_cg['classification_group']
 
-        cg = classifications.ClassificationGroup(self.ctxt, **test_cg)
+        cg = cs_base.ClassificationGroup(self.ctxt, **test_cg)
 
         updated_fields = {'classification_group':
                           {'name': 'Test Group Updated',

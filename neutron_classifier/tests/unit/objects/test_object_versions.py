@@ -22,7 +22,6 @@ from oslo_versionedobjects import base as obj_base
 from oslo_versionedobjects import fixture
 
 from neutron import objects as n_obj
-
 from neutron_classifier import objects
 from neutron_classifier.tests import base as test_base
 
@@ -33,7 +32,6 @@ from neutron_classifier.tests import base as test_base
 # This list also includes VersionedObjects from Neutron that are registered
 # through dependencies.
 object_data = {
-    'ClassificationGroup': '1.0-e621ff663f76bb494072872222f5fe72',
     'CGToClassificationGroupMapping': '1.0-8ebed0ef1035bcc4b307da1bbdc6be64',
     'CGToClassificationMapping': '1.0-fe5942adbe82301a38b67bdce484efb1',
     'EthernetClassification': '1.0-267f03162a6e011197b663ee34e6cb0b',
