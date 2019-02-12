@@ -1,4 +1,4 @@
-# Copyright 2017 Intel Corporation.
+# Copyright 2018 Intel Corporation.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -17,12 +17,14 @@ from oslo_log import log as logging
 from neutron_lib.db import api as db_api
 
 from neutron.objects import base as base_obj
+from neutron_classifier.common import constants as nc_consts
 from neutron_classifier.common import exceptions
 from neutron_classifier.common import validators
 from neutron_classifier.db import classification as c_db
 from neutron_classifier.extensions import classification
 from neutron_classifier.objects import classification_type as type_obj
 from neutron_classifier.objects import classifications as class_group
+from neutron_classifier.services.classification import l2_advertiser
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +35,7 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
 
     def __init__(self):
         super(ClassificationPlugin, self).__init__()
-        self.driver_manager = None
+        self.driver_manager = l2_advertiser.NeutronClassifierDriverManager()
 
     def create_classification(self, context, classification):
         details = self.break_out_headers(classification)
@@ -50,6 +52,8 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
         db_dict = self.merge_header(cl)
         db_dict['id'] = cl['id']
 
+        self.driver_manager.call(nc_consts.CREATE_CLASS, context, cl)
+
         return db_dict
 
     def delete_classification(self, context, classification_id):
@@ -62,6 +66,8 @@ class ClassificationPlugin(classification.NeutronClassificationPluginBase,
 
         with db_api.CONTEXT_WRITER.using(context):
             classification.delete()
+        self.driver_manager.call(nc_consts.DELETE_CLASS, context,
+                                 classification)
 
     def update_classification(self, context, classification_id,
                               fields_to_update):

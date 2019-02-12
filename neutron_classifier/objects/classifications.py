@@ -27,7 +27,7 @@ from neutron_classifier.db import models
 from neutron_classifier.db.rbac_db_models import ClassificationGroupRBAC
 
 
-@obj_base.VersionedObjectRegistry.register
+@base.NeutronObjectRegistry.register
 class ClassificationGroup(rbac_db.NeutronRbacObject):
     # Version 1.0: Initial version
     VERSION = '1.0'
@@ -120,7 +120,7 @@ class ClassificationBase(base.NeutronDbObject):
             return objects
 
 
-@obj_base.VersionedObjectRegistry.register
+@base.NeutronObjectRegistry.register
 class IPV4Classification(ClassificationBase):
     VERSION = '1.0'
     db_model = models.IPV4Classification
@@ -154,7 +154,7 @@ class IPV4Classification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
+@base.NeutronObjectRegistry.register
 class IPV6Classification(ClassificationBase):
     VERSION = '1.0'
     db_model = models.IPV6Classification
@@ -186,7 +186,7 @@ class IPV6Classification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
+@base.NeutronObjectRegistry.register
 class EthernetClassification(ClassificationBase):
     VERSION = '1.0'
     db_model = models.EthernetClassification
@@ -210,7 +210,7 @@ class EthernetClassification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
+@base.NeutronObjectRegistry.register
 class UDPClassification(ClassificationBase):
     VERSION = '1.0'
     db_model = models.UDPClassification
@@ -237,7 +237,7 @@ class UDPClassification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
+@base.NeutronObjectRegistry.register
 class TCPClassification(ClassificationBase):
     VERSION = '1.0'
     db_model = models.TCPClassification
