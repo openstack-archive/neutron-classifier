@@ -12,65 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from neutron_lib.db import model_base
+from neutron.db import classification
+
+# from neutron_lib.db import model_base
 from neutron_lib.db import model_query as mq
 
 import sqlalchemy as sa
-from sqlalchemy import orm
+# from sqlalchemy import orm
 
 
-class ClassificationGroup(model_base.BASEV2, model_base.HasId,
-                          model_base.HasProject):
-    __tablename__ = 'classification_groups'
-    name = sa.Column(sa.String(255))
-    description = sa.Column(sa.String(255))
-    shared = sa.Column(sa.Boolean, default=False)
-    operator = sa.Column(sa.Enum('AND', 'OR'), default='AND', nullable=False)
-    classifications = orm.relationship(
-        "ClassificationBase", lazy="subquery",
-        secondary='classification_group_to_classification_mappings')
-    classification_groups = orm.relationship(
-        "ClassificationGroup", lazy="subquery",
-        secondary='classification_group_to_cg_mappings',
-        primaryjoin="ClassificationGroup.id=="
-                    "CGToClassificationGroupMapping.container_cg_id",
-        secondaryjoin="ClassificationGroup.id=="
-                      "CGToClassificationGroupMapping.stored_cg_id")
-
-
-class CGToClassificationMapping(model_base.BASEV2):
-    __tablename__ = 'classification_group_to_classification_mappings'
-    container_cg_id = sa.Column(sa.String(36),
-                                sa.ForeignKey('classification_groups.id',
-                                ondelete='CASCADE'), primary_key=True)
-    classification = orm.relationship("ClassificationBase", lazy="subquery")
-    stored_classification_id = sa.Column(sa.String(36),
-                                         sa.ForeignKey('classifications.id'),
-                                         primary_key=True)
-
-
-class CGToClassificationGroupMapping(model_base.BASEV2):
-    __tablename__ = 'classification_group_to_cg_mappings'
-    container_cg_id = sa.Column(sa.String(36),
-                                sa.ForeignKey('classification_groups.id',
-                                ondelete='CASCADE'), primary_key=True)
-    stored_cg_id = sa.Column(sa.String(36),
-                             sa.ForeignKey('classification_groups.id'),
-                             primary_key=True)
-
-
-class ClassificationBase(model_base.HasId, model_base.HasProject,
-                         model_base.BASEV2):
-    __tablename__ = 'classifications'
-    c_type = sa.Column(sa.String(36))
-    __mapper_args__ = {'polymorphic_on': c_type}
-    name = sa.Column(sa.String(255))
-    description = sa.Column(sa.String(255))
-    shared = sa.Column(sa.Boolean())
-    negated = sa.Column(sa.Boolean())
-
-
-class IPV4Classification(ClassificationBase):
+class IPV4Classification(classification.ClassificationBase):
     __tablename__ = 'ipv4_classifications'
     __mapper_args__ = {'polymorphic_identity': 'ipv4'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id',
@@ -89,7 +40,7 @@ class IPV4Classification(ClassificationBase):
     dst_addr = sa.Column(sa.String(19))
 
 
-class IPV6Classification(ClassificationBase):
+class IPV6Classification(classification.ClassificationBase):
     __tablename__ = 'ipv6_classifications'
     __mapper_args__ = {'polymorphic_identity': 'ipv6'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id',
@@ -106,7 +57,7 @@ class IPV6Classification(ClassificationBase):
     dst_addr = sa.Column(sa.String(49))
 
 
-class EthernetClassification(ClassificationBase):
+class EthernetClassification(classification.ClassificationBase):
     __tablename__ = 'ethernet_classifications'
     __mapper_args__ = {'polymorphic_identity': 'ethernet'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id',
@@ -116,7 +67,7 @@ class EthernetClassification(ClassificationBase):
     dst_addr = sa.Column(sa.String(17))
 
 
-class UDPClassification(ClassificationBase):
+class UDPClassification(classification.ClassificationBase):
     __tablename__ = 'udp_classifications'
     __mapper_args__ = {'polymorphic_identity': 'udp'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id',
@@ -129,7 +80,7 @@ class UDPClassification(ClassificationBase):
     length_max = sa.Column(sa.Integer())
 
 
-class TCPClassification(ClassificationBase):
+class TCPClassification(classification.ClassificationBase):
     __tablename__ = 'tcp_classifications'
     __mapper_args__ = {'polymorphic_identity': 'tcp'}
     id = sa.Column(sa.String(36), sa.ForeignKey('classifications.id',
@@ -147,7 +98,7 @@ class TCPClassification(ClassificationBase):
 def _read_classification_group(context, id):
     """Returns a classification group."""
 
-    cg = mq.get_by_id(context, ClassificationGroup, id)
+    cg = mq.get_by_id(context, classification.ClassificationGroup, id)
     return cg
 
 
@@ -187,7 +138,8 @@ def _generate_dict_from_cg_db(model, fields=None):
 def _read_all_classification_groups(plugin, context):
     """Returns all classification groups."""
 
-    class_group = plugin._get_collection(context, ClassificationGroup,
+    class_group = plugin._get_collection(context,
+                                         classification.ClassificationGroup,
                                          _generate_dict_from_cg_db)
     return class_group
 

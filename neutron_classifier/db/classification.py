@@ -1,4 +1,4 @@
-# Copyright 2017 Intel Corporation.
+#    Copyright 2017 Intel Corporation.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -19,10 +19,10 @@ from neutron_lib.db import api as db_api
 
 from neutron.db import common_db_mixin
 from neutron.objects import base as base_obj
+from neutron.objects import classification as cs_base
 
 from neutron_classifier.common import exceptions
 from neutron_classifier.common import validators
-from neutron_classifier.objects import classifications
 
 LOG = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
         db_dict = details
         if 'tenant_id' in details:
             del details['tenant_id']
-        cg = classifications.ClassificationGroup(context, **details)
+        cg = cs_base.ClassificationGroup(context, **details)
 
         with db_api.CONTEXT_WRITER.using(context):
             cg.create()
@@ -61,7 +61,7 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
         with db_api.CONTEXT_WRITER.using(context):
             if c_flag:
                 for cl in mappings['c_ids']:
-                    cg_c_mapping = classifications.CGToClassificationMapping(
+                    cg_c_mapping = cs_base.CGToClassificationMapping(
                         context,
                         container_cg_id=cg.id,
                         stored_classification_id=cl)
@@ -69,7 +69,7 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
             if cg_flag:
                 for cg_id in mappings['cg_ids']:
                     cg_cg_mapping =\
-                        classifications.CGToClassificationGroupMapping(
+                        cs_base.CGToClassificationGroupMapping(
                             context,
                             container_cg_id=cg.id,
                             stored_cg_id=cg_id
@@ -85,7 +85,7 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
     def delete_classification_group(self, context, classification_group_id):
         if validators.check_can_delete_classification_group(
                 context, classification_group_id):
-            cg = classifications.ClassificationGroup.get_object(
+            cg = cs_base.ClassificationGroup.get_object(
                 context, id=classification_group_id)
             with db_api.CONTEXT_WRITER.using(context):
                 cg.delete()
@@ -99,7 +99,7 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
             if key not in valid_keys:
                 raise exceptions.InvalidUpdateRequest()
         with db_api.CONTEXT_WRITER.using(context):
-            cg = classifications.ClassificationGroup.update_object(
+            cg = cs_base.ClassificationGroup.update_object(
                 context, fields_to_update, id=classification_group_id)
         db_dict = self._make_db_dict(cg)
         return db_dict
@@ -141,12 +141,12 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
     def get_classification_group(self, context, classification_group_id,
                                  fields=None):
         with db_api.CONTEXT_WRITER.using(context):
-            cg = classifications.ClassificationGroup.get_object(
+            cg = cs_base.ClassificationGroup.get_object(
                 context, id=classification_group_id)
             db_dict = self._make_db_dict(cg)
-            mapped_cs = classifications._get_mapped_classifications(context,
-                                                                    cg)
-            mapped_cgs = classifications._get_mapped_classification_groups(
+            mapped_cs = cs_base._get_mapped_classifications(context,
+                                                            cg)
+            mapped_cgs = cs_base._get_mapped_classification_groups(
                 context, cg)
             c_dict = self._make_c_dicts(mapped_cs)
             cg_dict = self._make_db_dicts(mapped_cgs)
@@ -158,7 +158,7 @@ class TrafficClassificationGroupPlugin(common_db_mixin.CommonDbMixin):
                                   marker=None, page_reverse=False,
                                   filters=None, fields=None):
         pager = base_obj.Pager(sorts, limit, page_reverse, marker)
-        cgs = classifications.ClassificationGroup.get_objects(context,
-                                                              _pager=pager)
+        cgs = cs_base.ClassificationGroup.get_objects(context,
+                                                      _pager=pager)
         db_dict = self._make_db_dicts(cgs)
         return db_dict
