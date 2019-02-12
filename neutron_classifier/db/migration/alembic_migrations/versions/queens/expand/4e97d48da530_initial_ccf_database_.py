@@ -30,16 +30,6 @@ down_revision = 'start_neutron_classifier'
 
 
 def upgrade():
-    op.create_table(
-        'classification_groups',
-        sa.Column('id', sa.String(length=36), primary_key=True),
-        sa.Column('name', sa.String(length=255)),
-        sa.Column('description', sa.String(length=255)),
-        sa.Column('project_id', sa.String(length=255),
-                  index=True),
-        sa.Column('shared', sa.Boolean()),
-        sa.Column('operator', sa.Enum("AND", "OR", name="operator_types"),
-                  nullable=False))
 
     op.create_table(
         'classificationgrouprbacs',

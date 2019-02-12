@@ -17,6 +17,7 @@ import oslo_versionedobjects
 
 from neutron_lib import context
 
+from neutron.objects import classification as cs_base
 from neutron.tests.unit.objects import test_base
 
 from neutron_classifier.objects import classifications
@@ -49,7 +50,7 @@ class _CCFObjectsTestCommon(object):
                  'project_id': uuidutils.generate_uuid(),
                  'shared': False,
                  'operator': 'AND'}
-        cg = classifications.ClassificationGroup(self.ctx, **attrs)
+        cg = cs_base.ClassificationGroup(self.ctx, **attrs)
         cg.create()
         return cg
 
@@ -65,15 +66,15 @@ class _CCFObjectsTestCommon(object):
     def _create_test_cg_cg_mapping(self, cg1, cg2):
         attrs = {'container_cg_id': cg1,
                  'stored_cg_id': cg2}
-        cg_m_cg = classifications.CGToClassificationGroupMapping(self.ctx,
-                                                                 **attrs)
+        cg_m_cg = cs_base.CGToClassificationGroupMapping(self.ctx,
+                                                         **attrs)
         cg_m_cg.create()
         return cg_m_cg
 
     def _create_test_cg_c_mapping(self, cg, c):
         attrs = {'container_cg_id': cg,
                  'stored_classification_id': c}
-        cg_m_c = classifications.CGToClassificationMapping(self.ctx,
-                                                           **attrs)
+        cg_m_c = cs_base.CGToClassificationMapping(self.ctx,
+                                                   **attrs)
         cg_m_c.create()
         return cg_m_c

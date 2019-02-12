@@ -22,7 +22,6 @@ from oslo_versionedobjects import base as obj_base
 from oslo_versionedobjects import fixture
 
 from neutron import objects as n_obj
-
 from neutron_classifier import objects
 from neutron_classifier.tests import base as test_base
 
