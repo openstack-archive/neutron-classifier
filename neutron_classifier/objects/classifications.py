@@ -19,109 +19,15 @@ from oslo_versionedobjects import base as obj_base
 from oslo_versionedobjects import fields as obj_fields
 
 from neutron.objects import base
+from neutron.objects import classification
 from neutron.objects import common_types
-from neutron.objects import rbac_db
 from neutron_lib.db import api as db_api
 
 from neutron_classifier.db import models
-from neutron_classifier.db.rbac_db_models import ClassificationGroupRBAC
 
 
-@obj_base.VersionedObjectRegistry.register
-class ClassificationGroup(rbac_db.NeutronRbacObject):
-    # Version 1.0: Initial version
-    VERSION = '1.0'
-
-    # required by RbacNeutronMetaclass
-    rbac_db_cls = ClassificationGroupRBAC
-    db_model = models.ClassificationGroup
-
-    fields = {
-        'id': common_types.UUIDField(),
-        'name': obj_fields.StringField(),
-        'description': obj_fields.StringField(),
-        'project_id': obj_fields.StringField(),
-        'shared': obj_fields.BooleanField(default=False),
-        'operator': obj_fields.EnumField(['AND', 'OR'], default='AND'),
-    }
-
-    fields_no_update = ['id', 'project_id']
-
-    @classmethod
-    def get_object(cls, context, **kwargs):
-        # We want to get the policy regardless of its tenant id. We'll make
-        # sure the tenant has permission to access the policy later on.
-        admin_context = context.elevated()
-        with db_api.autonested_transaction(admin_context.session):
-            obj = super(ClassificationGroup, cls).get_object(admin_context,
-                                                             **kwargs)
-            if not obj or not cls.is_accessible(context, obj):
-                return
-            return obj
-
-    @classmethod
-    def get_bound_tenant_ids(cls, context, **kwargs):
-        # If we can return the policy regardless of tenant, we don't need
-        # to return the tenant id.
-        pass
-
-
-@obj_base.VersionedObjectRegistry.register
-class CGToClassificationMapping(base.NeutronDbObject):
-    VERSION = '1.0'
-
-    rbac_db_model = ClassificationGroupRBAC
-    db_model = models.CGToClassificationMapping
-
-    fields = {
-        'container_cg_id': common_types.UUIDField(),
-        'stored_classification_id': common_types.UUIDField()}
-
-
-@obj_base.VersionedObjectRegistry.register
-class CGToClassificationGroupMapping(base.NeutronDbObject):
-    VERSION = '1.0'
-
-    rbac_db_model = ClassificationGroupRBAC
-    db_model = models.CGToClassificationGroupMapping
-
-    fields = {
-        'container_cg_id': common_types.UUIDField(),
-        'stored_cg_id': common_types.UUIDField()
-    }
-
-
-@six.add_metaclass(abc.ABCMeta)
-class ClassificationBase(base.NeutronDbObject):
-    VERSION = '1.0'
-
-    db_model = models.ClassificationBase
-
-    fields = {
-        'id': common_types.UUIDField(),
-        'name': obj_fields.StringField(),
-        'description': obj_fields.StringField(),
-        'project_id': obj_fields.StringField(),
-        'shared': obj_fields.BooleanField(default=False),
-        'c_type': obj_fields.StringField(),
-        'negated': obj_fields.BooleanField(default=False),
-    }
-
-    fields_no_update = ['id', 'c_type']
-
-    @classmethod
-    def get_objects(cls, context, _pager=None, validate_filters=True,
-                    **kwargs):
-        with db_api.autonested_transaction(context.session):
-            objects = super(ClassificationBase,
-                            cls).get_objects(context, _pager,
-                                             validate_filters,
-                                             **kwargs)
-            return objects
-
-
-@obj_base.VersionedObjectRegistry.register
-class IPV4Classification(ClassificationBase):
+@base.NeutronObjectRegistry.register
+class IPV4Classification(classification.ClassificationBase):
     VERSION = '1.0'
     db_model = models.IPV4Classification
 
@@ -143,7 +49,7 @@ class IPV4Classification(ClassificationBase):
 
     def create(self):
         with db_api.autonested_transaction(self.obj_context.session):
-            super(ClassificationBase, self).create()
+            super(classification.ClassificationBase, self).create()
 
     @classmethod
     def get_object(cls, context, **kwargs):
@@ -154,8 +60,8 @@ class IPV4Classification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
-class IPV6Classification(ClassificationBase):
+@base.NeutronObjectRegistry.register
+class IPV6Classification(classification.ClassificationBase):
     VERSION = '1.0'
     db_model = models.IPV6Classification
 
@@ -175,7 +81,7 @@ class IPV6Classification(ClassificationBase):
 
     def create(self):
         with db_api.autonested_transaction(self.obj_context.session):
-            super(ClassificationBase, self).create()
+            super(classification.ClassificationBase, self).create()
 
     @classmethod
     def get_object(cls, context, **kwargs):
@@ -186,8 +92,8 @@ class IPV6Classification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
-class EthernetClassification(ClassificationBase):
+@base.NeutronObjectRegistry.register
+class EthernetClassification(classification.ClassificationBase):
     VERSION = '1.0'
     db_model = models.EthernetClassification
 
@@ -199,7 +105,7 @@ class EthernetClassification(ClassificationBase):
 
     def create(self):
         with db_api.autonested_transaction(self.obj_context.session):
-            super(ClassificationBase, self).create()
+            super(classification.ClassificationBase, self).create()
 
     @classmethod
     def get_object(cls, context, **kwargs):
@@ -210,8 +116,8 @@ class EthernetClassification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
-class UDPClassification(ClassificationBase):
+@base.NeutronObjectRegistry.register
+class UDPClassification(classification.ClassificationBase):
     VERSION = '1.0'
     db_model = models.UDPClassification
 
@@ -226,7 +132,7 @@ class UDPClassification(ClassificationBase):
 
     def create(self):
         with db_api.autonested_transaction(self.obj_context.session):
-            super(ClassificationBase, self).create()
+            super(classification.ClassificationBase, self).create()
 
     @classmethod
     def get_object(cls, context, **kwargs):
@@ -237,8 +143,8 @@ class UDPClassification(ClassificationBase):
             return obj
 
 
-@obj_base.VersionedObjectRegistry.register
-class TCPClassification(ClassificationBase):
+@base.NeutronObjectRegistry.register
+class TCPClassification(classification.ClassificationBase):
     VERSION = '1.0'
     db_model = models.TCPClassification
 
@@ -255,7 +161,7 @@ class TCPClassification(ClassificationBase):
 
     def create(self):
         with db_api.autonested_transaction(self.obj_context.session):
-            super(ClassificationBase, self).create()
+            super(classification.ClassificationBase, self).create()
 
     @classmethod
     def get_object(cls, context, **kwargs):
@@ -292,7 +198,7 @@ def _get_mapped_classification_groups(context, obj):
     :param obj: ClassificationGroup object
     :return: list of ClassificationGroup objects
     """
-    mapped_cgs = [ClassificationGroup._load_object(context, cg) for cg in
+    mapped_cgs = [classification.ClassificationGroup._load_object(context, cg) for cg in
                   models._read_classification_groups(context, obj.id)]
     return mapped_cgs
 

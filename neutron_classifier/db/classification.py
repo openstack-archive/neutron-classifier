@@ -19,10 +19,10 @@ from neutron_lib.db import api as db_api
 
 from neutron.db import common_db_mixin
 from neutron.objects import base as base_obj
+from neutron.objects import classification
 
 from neutron_classifier.common import exceptions
 from neutron_classifier.common import validators
-from neutron_classifier.objects import classifications
 
 LOG = logging.getLogger(__name__)
 

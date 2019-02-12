@@ -15,8 +15,9 @@
 
 
 from neutron_classifier.objects import classifications as cs
+from neutron.objects import classification as cs_base
 
-COMMON_FIELDS = cs.ClassificationBase.fields.keys()
+COMMON_FIELDS = cs_base.ClassificationBase.fields.keys()
 FIELDS_IPV4 = list(set(cs.IPV4Classification.fields.keys()) -
                    set(COMMON_FIELDS))
 FIELDS_IPV6 = list(set(cs.IPV6Classification.fields.keys()) -
@@ -34,3 +35,20 @@ SUPPORTED_FIELDS = {'ipv4': FIELDS_IPV4,
                     'tcp': FIELDS_TCP,
                     'udp': FIELDS_UDP,
                     'ethernet': FIELDS_ETHERNET}
+
+# Method names for recieving classifications
+PRECOMMIT_POSTFIX = '_precommit'
+CREATE_CLASS = 'create_classification'
+CREATE_CLASS_PRECOMMIT = CREATE_CLASS + PRECOMMIT_POSTFIX
+UPDATE_CLASS = 'update_classification'
+UPDATE_CLASS_PRECOMMIT = UPDATE_CLASS + PRECOMMIT_POSTFIX
+DELETE_CLASS = 'delete_classification'
+DELETE_CLASS_PRECOMMIT = DELETE_CLASS + PRECOMMIT_POSTFIX
+
+CLASS_CALL_METHODS = (
+    CREATE_CLASS,
+    CREATE_CLASS_PRECOMMIT,
+    UPDATE_CLASS,
+    UPDATE_CLASS_PRECOMMIT,
+    DELETE_CLASS,
+    DELETE_CLASS_PRECOMMIT, )
