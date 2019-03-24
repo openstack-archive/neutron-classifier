@@ -17,7 +17,7 @@
               dest: devstack-gate
           EOF
           /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
-              git://git.openstack.org \
+              https://git.openstack.org \
               openstack-infra/devstack-gate
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
@@ -29,7 +29,7 @@
           set -x
           cat << 'EOF' >>"/tmp/dg-local.conf"
           [[local|localrc]]
-          enable_plugin neutron-classifier git://git.openstack.org/openstack/neutron-classifier
+          enable_plugin neutron-classifier https://git.openstack.org/openstack/neutron-classifier
           EOF
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
