@@ -1,0 +1,10 @@
+Code-Review+1: jacky06 <zhang.min@99cloud.net>
+Code-Review+2: Igor D.C. <igor.duarte.cardoso@intel.com>
+Code-Review+2: Bernard Cafarelli <bcafarel@redhat.com>
+Workflow+1: Bernard Cafarelli <bcafarel@redhat.com>
+Verified+2: Zuul
+Submitted-by: Zuul
+Submitted-at: Thu, 11 Apr 2019 08:14:33 +0000
+Reviewed-on: https://review.openstack.org/628645
+Project: openstack/neutron-classifier
+Branch: refs/heads/master
